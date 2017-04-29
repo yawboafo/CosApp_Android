@@ -258,12 +258,12 @@ public class LoginActivity extends AppCompatActivity {
         }) {
 
         };
-        int socketTimeout = 480000000;//8 minutes - change to what you want
+       /** int socketTimeout = 480000000;//8 minutes - change to what you want
         RetryPolicy policy = new DefaultRetryPolicy(
                 socketTimeout,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
-        request.setRetryPolicy(policy);
+        request.setRetryPolicy(policy);**/
         requestQueue.add(request);
         Log.d("oxinbo", "Server Logs" + params.toString());
     }

@@ -74,6 +74,8 @@ public class IncomingChat extends Activity {
     private VolleySingleton volleySingleton;
     private RequestQueue requestQueue;
     IncomingChatModel incoming;
+
+    private String company_id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -254,7 +256,7 @@ public class IncomingChat extends Activity {
 
 
                                 String chat_session = object.getString("chat_session");
-
+                                company_id= object.getString("company");
                                 Log.d("chat_session","chat_session : "+chat_session);
 
 
@@ -403,7 +405,7 @@ public class IncomingChat extends Activity {
 
         topic.setKey1(Application.AppUserKey);
         topic.setKey2(incoming.getCustomer_encrypted_id());
-        topic.setValue1("");
+        topic.setValue1(incoming.getCompany_id());
         topic.setValue2("");
 
         //Create Conversation.

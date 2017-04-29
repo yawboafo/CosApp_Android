@@ -10,7 +10,7 @@ import com.activeandroid.query.Select;
  */
 
 @Table(name = "User")
-public class User extends Model {
+public class User extends TruncatableModel {
 
 
     @Column(name = "userkey")

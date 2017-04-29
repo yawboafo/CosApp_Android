@@ -1,6 +1,7 @@
 package com.ecoach.cosapp.FireBase;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.applozic.mobicomkit.api.account.register.RegistrationResponse;
 import com.applozic.mobicomkit.api.account.user.MobiComUserPreference;
@@ -57,11 +58,11 @@ public class FcmListenerService extends FirebaseMessagingService {
                     incomingChatModel.setCustomer_fname(jsonObject.getString("customer_fname"));
 
                     incomingChatModel.setCustomer_id(jsonObject.getString("customer_id"));
-
+                    incomingChatModel.setCustomer_encrypted_id(jsonObject.getString("customer_encrypted_id"));
                     incomingChatModel.setCompany_id(remoteMessage.getData().get("company_id"));
 
 
-                    incomingChatModel.setCustomer_encrypted_id(jsonObject.getString("customer_encrypted_id"));
+
 
                     incomingChatModel.setCompany_name(remoteMessage.getData().get("company_name"));
                     incomingChatModel.setCompany_department(remoteMessage.getData().get("company_department"));
@@ -94,9 +95,19 @@ try{
 
                     Log.d(TAG,"customer_encrypted_id"+remoteMessage.getData().get("customer_encrypted_id"));
 
-                    Intent intent = new Intent(Application.getContext(), IncomingChat.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
+
+                    Log.d("UserID","CURRENT USER ID"+Application.AppUserKey  +  "CALLING UERS  " + incomingChatModel.getCustomer_encrypted_id());
+
+                    if(Application.AppUserKey == incomingChatModel.getCustomer_encrypted_id()){
+
+                        Toast.makeText(getApplicationContext(),"Ugly error",Toast.LENGTH_SHORT).show();
+                    }else{
+
+                        Intent intent = new Intent(Application.getContext(), IncomingChat.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    }
+
 
                 }catch (Exception e){
                     e.printStackTrace();

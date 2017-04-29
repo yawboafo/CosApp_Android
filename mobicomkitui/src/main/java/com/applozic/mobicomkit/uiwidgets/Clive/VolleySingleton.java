@@ -1,5 +1,7 @@
 package com.applozic.mobicomkit.uiwidgets.Clive;
 
+import android.content.Context;
+
 import com.android.volley.Cache;
 import com.android.volley.Network;
 import com.android.volley.RequestQueue;
@@ -16,24 +18,26 @@ import com.applozic.mobicomkit.uiwidgets.ApplozicApplication;
 public class VolleySingleton {
     private static VolleySingleton sInstance=null;
     private static RequestQueue mRequestQueue;
+    private static  Context context;
 
-    private VolleySingleton(){
-        mRequestQueue= Volley.newRequestQueue(ApplozicApplication.context);
+    private VolleySingleton(Context context){
+        mRequestQueue= Volley.newRequestQueue(context);
+        this.context =context;
     }
 
 
-    public static VolleySingleton getsInstance(){
+    public static VolleySingleton getsInstance(Context context){
 
         if(sInstance==null){
-            sInstance=new VolleySingleton();
+            sInstance=new VolleySingleton(context);
         }
         return  sInstance;
     }
 
-    public static RequestQueue getRequestQueue(){
+    public static RequestQueue getRequestQueue(Context context){
 
         if (mRequestQueue == null) {
-            Cache cache = new DiskBasedCache(ApplozicApplication.context.getCacheDir(), 10 * 1024 * 1024);
+            Cache cache = new DiskBasedCache(context.getCacheDir(), 10 * 1024 * 1024);
             Network network = new BasicNetwork(new HurlStack());
             mRequestQueue = new RequestQueue(cache, network);
             // Don't forget to start the volley request queue

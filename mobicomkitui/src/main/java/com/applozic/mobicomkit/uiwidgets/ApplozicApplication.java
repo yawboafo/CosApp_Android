@@ -2,6 +2,7 @@ package com.applozic.mobicomkit.uiwidgets;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Log;
 
 import com.applozic.mobicomkit.uiwidgets.Clive.Models.ConversationChat;
 
@@ -45,24 +46,25 @@ public class ApplozicApplication extends Application {
 
 
 
-    public static void SaveConversationChat(ConversationChat conversationChat){
+    public static void SaveConversationChat(Context context,ConversationChat conversationChat){
 
-
+        Log.d("Map ","Saving Map to file  ..... ");
         FileOutputStream fos = null;
         try {
             fos = context.openFileOutput("conversation.srl", Context.MODE_PRIVATE);
             ObjectOutputStream os = new ObjectOutputStream(fos);
-            os.writeObject(context);
+            os.writeObject(conversationChat);
             os.close();
             fos.close();
+            Log.d("Map ","Saving Map to file Done .. ");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    public static ConversationChat ReadConversationChat( ){
-
+    public static ConversationChat ReadConversationChat( Context context){
+        Log.d("Map ","Reading Map from file  ...");
         ConversationChat simpleClass = new ConversationChat();
         try {
 
@@ -71,10 +73,10 @@ public class ApplozicApplication extends Application {
              simpleClass = (ConversationChat) is.readObject();
             is.close();
             fis.close();
-
+            Log.d("Map ","Reading Map from file Done ...");
         }catch (Exception e){
 
-
+e.printStackTrace();
         }
 
 

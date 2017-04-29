@@ -158,7 +158,7 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
         businesscoverLogo= (ImageView)findViewById(R.id.businesscoverLogo);
         companyLogo = (CircleImageView)findViewById(R.id.imageButton2);
         pinBusinesslocation = (ImageView)findViewById(R.id.imageButton3);
-        uploadCert=(FButton)findViewById(R.id.submitRatingButton);
+        uploadCert=(FButton)findViewById(R.id.button2);
         chatBackground=(ImageView)findViewById(R.id.imageView5) ;
 
         use_email.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

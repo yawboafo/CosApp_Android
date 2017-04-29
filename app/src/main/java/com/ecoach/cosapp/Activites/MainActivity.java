@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         MaterialTabListener,HomeFragment.OnFragmentInteractionListener,
         CategoriesFragment.OnFragmentInteractionListener,
-        RecentFragment.OnFragmentInteractionListener,MessageCommunicator, MobiComKitActivityInterface,RatingDialog.OnFragmentInteractionListener {
+        RecentFragment.OnFragmentInteractionListener,MessageCommunicator, MobiComKitActivityInterface{
 
     private FirebaseAuth auth;
 
@@ -224,10 +224,10 @@ public class MainActivity extends AppCompatActivity
                 public void run()
                 {
 
-                   // startService(new Intent(MainActivity.this, Terminator2.class));
+                    startService(new Intent(MainActivity.this, Terminator2.class));
                     invalidateOptionsMenu();
                 }
-            }, 0, 3000);
+            }, 0, 5000);
 
 
         }catch (Exception e){e.printStackTrace();}
@@ -460,7 +460,7 @@ public class MainActivity extends AppCompatActivity
                          appInstanceSettings.setIsloggedIn(false);
                          appInstanceSettings.setUserkey("");
                          appInstanceSettings.save();
-
+                        User.truncate(User.class);
                         new UserClientService(MainActivity.this).logout();
                         ProcessPhoenix.triggerRebirth(MainActivity.this);
                     }
@@ -654,6 +654,8 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+
+
     private class ViewPagerAdapter extends FragmentStatePagerAdapter {
         private String[] titles = {
                 "Home", "Categories","Recent Chats"
@@ -772,11 +774,11 @@ public class MainActivity extends AppCompatActivity
 
               ApplozicClient.getInstance(context).enableNotification();
               //ApplozicClient.getInstance(context).hideChatListOnNotification();
-             // ApplozicClient.getInstance(context).setContextBasedChat(true);
+              ApplozicClient.getInstance(context).setContextBasedChat(false);
 
 
               Log.d("aPPLOZIC Succes",registrationResponse.toString());
-              ApplozicClient.getInstance(context).setContextBasedChat(true).setHandleDial(true).setIPCallEnabled(true);
+              ApplozicClient.getInstance(context).setHandleDial(true).setIPCallEnabled(true);
               Map<ApplozicSetting.RequestCode, String> activityCallbacks = new HashMap<ApplozicSetting.RequestCode, String>();
               activityCallbacks.put(ApplozicSetting.RequestCode.AUDIO_CALL, AudioCallActivityV2.class.getName());
               activityCallbacks.put(ApplozicSetting.RequestCode.VIDEO_CALL, VideoActivity.class.getName());

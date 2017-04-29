@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
@@ -80,6 +81,8 @@ import com.applozic.mobicomkit.contact.BaseContactService;
 import com.applozic.mobicomkit.uiwidgets.ApplozicApplication;
 import com.applozic.mobicomkit.uiwidgets.ApplozicSetting;
 import com.applozic.mobicomkit.uiwidgets.AlCustomizationSettings;
+import com.applozic.mobicomkit.uiwidgets.Clive.Models.ConversationChat;
+import com.applozic.mobicomkit.uiwidgets.Clive.Models.ConversationModel;
 import com.applozic.mobicomkit.uiwidgets.Clive.RatingDialog;
 import com.applozic.mobicomkit.uiwidgets.Clive.VolleySingleton;
 import com.applozic.mobicomkit.uiwidgets.R;
@@ -120,6 +123,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -243,7 +247,9 @@ public class ConversationActivity extends AppCompatActivity implements
         }
     }
 
-    public static void addFragment(FragmentActivity fragmentActivity, Fragment fragmentToAdd, String fragmentTag) {
+    public static void addFragment(FragmentActivity fragmentActivity,
+                                   Fragment fragmentToAdd,
+                                   String fragmentTag) {
         FragmentManager supportFragmentManager = fragmentActivity.getSupportFragmentManager();
 
         // Fragment activeFragment = UIService.getActiveFragment(fragmentActivity);
@@ -286,7 +292,21 @@ public class ConversationActivity extends AppCompatActivity implements
             showErrorMessageView(errorMessage);
         }
 
-        Log.d("conversationid","conversationID"+BroadcastService.staticconversationID+"");
+        Log.d("conversationid","OnresumeconversationID"+BroadcastService.staticconversationID+"");
+        try {
+          //
+            // getConversationDetailsToFile();
+
+            conversationTopicDetails = ConversationDatabaseService.getInstance(ConversationActivity.this).getConversationByConversationId(BroadcastService.staticconversationID);
+            String TopicDetails = conversationTopicDetails.getTopicDetail();
+
+            Log.d("TopicDetails",TopicDetails);
+
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+        }
 
     }
 
@@ -439,6 +459,16 @@ public class ConversationActivity extends AppCompatActivity implements
             return true;
         }**/
 
+
+        try {
+
+            Log.d("isRated","is Conversation Rated "+ get4rmSharedPreference(BroadcastService.staticconversationID.toString()));
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+        }
+
             try {
 
 
@@ -456,7 +486,7 @@ public class ConversationActivity extends AppCompatActivity implements
                 customerID = jObject.getString("key2");
                 Log.d("USERIDS","Rep ID "+ repID + " customer ID" +ApplozicApplication.cosappUserID);
 
-                if(customerID.equals(ApplozicApplication.cosappUserID)){
+                if(customerID.equals(ApplozicApplication.cosappUserID) && get4rmSharedPreference(BroadcastService.staticconversationID.toString())== false){
 
 
                     Log.d("checkRep","its not a rep chat");
@@ -475,6 +505,9 @@ public class ConversationActivity extends AppCompatActivity implements
                 e.printStackTrace();
             }
 
+
+
+
         //ConversationActivity.this.finish();
         return true;
     }
@@ -486,7 +519,7 @@ public class ConversationActivity extends AppCompatActivity implements
 
 
         Log.d("ApplozicUserID", "AppCosapp"+ApplozicApplication.cosappUserID);
-        Log.d("conversationid","conversationID"+BroadcastService.staticconversationID+"");
+
 
         baseContactService =  new AppContactService(this);
         conversationUIService =  new ConversationUIService(this);
@@ -516,6 +549,11 @@ public class ConversationActivity extends AppCompatActivity implements
         childFragmentLayout = (RelativeLayout) findViewById(R.id.layout_child_activity);
         profilefragment =  new ProfileFragment();
         profilefragment.setAlCustomizationSettings(alCustomizationSettings);
+
+
+
+
+
 
         if (Utils.hasMarshmallow()) {
             applozicPermission.checkRuntimePermissionForStorage();
@@ -591,6 +629,7 @@ public class ConversationActivity extends AppCompatActivity implements
 
 
     }
+
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -953,7 +992,7 @@ public class ConversationActivity extends AppCompatActivity implements
             customerID = jObject.getString("key2");
             Log.d("USERIDS","Rep ID "+ repID + " customer ID" +ApplozicApplication.cosappUserID);
 
-            if(customerID.equals(ApplozicApplication.cosappUserID)){
+            if(get4rmSharedPreference(BroadcastService.staticconversationID.toString())== false){
 
 
                 Log.d("checkRep","its not a rep chat");
@@ -1392,8 +1431,36 @@ public class ConversationActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onFragmentInteraction(String chat_session, String company_id, String rating_value ,String review_text) {
-        AcceptChatInvite(chat_session,company_id,rating_value ,review_text);
+    public void onFragmentInteraction(String rating_value ,String review_text) {
+
+
+        try {
+
+            String TopicDetails = conversationTopicDetails.getTopicDetail();
+
+            Log.d("detail",TopicDetails);
+
+            JSONObject jObject  = new JSONObject(TopicDetails);
+            repID = jObject.getString("key1");
+            customerID = jObject.getString("key2");
+            String companyID = jObject.getString("value1");
+            String chatsessionID = conversationTopicDetails.getTopicId();
+
+
+
+            rateConversation(chatsessionID,companyID,rating_value ,review_text);
+
+
+
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+        }
+
+
+
+
     }
 
 
@@ -1410,10 +1477,11 @@ public class ConversationActivity extends AppCompatActivity implements
 
         dialogFragment.show(ft, tag);
     }
-    private void AcceptChatInvite(String chat_session, String company_id, String rating_value ,String review_text){
+     SweetAlertDialog pDialog = null;
+    private void rateConversation(String chat_session, String company_id, String rating_value ,String review_text){
 
-        final SweetAlertDialog pDialog;
-        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+
+        pDialog = new SweetAlertDialog(ConversationActivity.this, SweetAlertDialog.PROGRESS_TYPE);
         pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         pDialog.setTitleText("Submitting Review ..");
         pDialog.setCancelable(false);
@@ -1444,8 +1512,8 @@ review_text
 
 
 
-        volleySingleton= VolleySingleton.getsInstance();
-        requestQueue=VolleySingleton.getRequestQueue();
+        volleySingleton= VolleySingleton.getsInstance(getApplicationContext());
+        requestQueue=VolleySingleton.getRequestQueue(getApplicationContext());
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,
                 ApplozicApplication.BASE_URL,
@@ -1463,7 +1531,7 @@ review_text
                             String message = object.getString("msg");
 
                             if (!statuscode.equals("201")) {
-                                pDialog.hide();
+
                                 new SweetAlertDialog(ConversationActivity.this, SweetAlertDialog.ERROR_TYPE)
                                         .setTitleText("Sorry,Try Again")
                                         .setContentText(message)
@@ -1477,8 +1545,23 @@ review_text
                                         .show();
 
                             } else if (statuscode.equals("201")) {
+                                //getConversationDetailsFromFileUpdateRating();
 
+                                write2SharedPrefrence(BroadcastService.staticconversationID.toString(),true);
 
+                                new SweetAlertDialog(ConversationActivity.this, SweetAlertDialog.SUCCESS_TYPE)
+                                        .setTitleText("Completed")
+                                        .setContentText(message)
+                                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                            @Override
+                                            public void onClick(SweetAlertDialog sweetAlertDialog) {
+
+                                                sweetAlertDialog.dismiss();
+
+                                            }
+                                        })
+                                        .show();
+//
 
                             }
 
@@ -1510,7 +1593,7 @@ review_text
                         .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
                             @Override
                             public void onClick(SweetAlertDialog sweetAlertDialog) {
-
+                                sweetAlertDialog.dismiss();
                             }
                         })
                         .show();
@@ -1572,7 +1655,7 @@ review_text
 
     private void getConversationDetailsToFile(){
 
-
+        Log.d("Map ","Map Key getting map key ");
         try {
 
 
@@ -1588,26 +1671,126 @@ review_text
             JSONObject jObject  = new JSONObject(TopicDetails);
             repID = jObject.getString("key1");
             customerID = jObject.getString("key2");
-            Log.d("USERIDS","Rep ID "+ repID + " customer ID" +ApplozicApplication.cosappUserID);
+            String companyID = jObject.getString("value1");
+            String chatsessionID = conversationTopicDetails.getTopicId();
 
-            if(customerID.equals(ApplozicApplication.cosappUserID)){
+            ConversationModel conversationModel = new ConversationModel();
+            conversationModel.setChat_session(chatsessionID);
+            conversationModel.setCompanyID(companyID);
+            conversationModel.setRepID(repID);
+            conversationModel.setCustomerID(customerID);
+            conversationModel.setConversationid(BroadcastService.staticconversationID);
+           // conversationModel.setRated(false);
+           // conversationModel.setMarkedAsread(false);
+
+            ConversationChat conversationChat = ApplozicApplication.ReadConversationChat(ConversationActivity.this);
 
 
-                Log.d("checkRep","its not a rep chat");
-                RatingDialog addRepsDialog=new RatingDialog().newInstance("","");
-                showDialog(addRepsDialog,"checkout");
+            for(Map.Entry<Integer,ConversationModel> entry : conversationChat.getMap().entrySet()) {
+                Integer key = entry.getKey();
+                //Integer value = entry.getValue();
 
-                ///onBackPressed();
-            }else {
-                ConversationActivity.this.finish();
-
+                Log.d("Map ","Map Key "+key);
             }
+
+
+            conversationChat.getMap().put(BroadcastService.staticconversationID,conversationModel);
+            ApplozicApplication.SaveConversationChat(ConversationActivity.this,conversationChat);
+
+
+            Log.d("MapSize","Map size"+conversationChat.getMap().size());
+
+
+
+         //   ApplozicApplication.SaveConversationChat(conversationChat);
+
+
 
         }catch (Exception e){
 
             e.printStackTrace();
         }
 
+
+    }
+
+    private void getConversationDetailsFromFileUpdateRating(){
+
+        ConversationChat conversationChat = ApplozicApplication.ReadConversationChat(ConversationActivity.this);
+        ConversationModel conversationModel = null;
+
+
+      //  conversationChat.getMap().get(BroadcastService.staticconversationID).setRated(true);
+
+        Log.d("isRated","isRated " +  "setting conversation to rated ....");
+
+        for(Map.Entry<Integer,ConversationModel> entry : conversationChat.getMap().entrySet()) {
+            Integer key = entry.getKey();
+            //Integer value = entry.getValue();
+
+            if(key == BroadcastService.staticconversationID){
+                conversationModel = entry.getValue();
+
+
+                conversationModel.setRated(true);
+
+            }
+        }
+
+
+       conversationChat.getMap().put(BroadcastService.staticconversationID,conversationModel);
+        ApplozicApplication.SaveConversationChat(ConversationActivity.this,conversationChat);
+        Log.d("isRated","isRated " +  "setting conversation to rated done....");
+
+    }
+
+    private boolean getifConversationRated(){
+
+        boolean isRated = false;
+
+        ConversationChat conversationChat = ApplozicApplication.ReadConversationChat(ConversationActivity.this);
+       // ConversationModel conversationModel = null;
+
+        for(Map.Entry<Integer,ConversationModel> entry : conversationChat.getMap().entrySet()) {
+            Integer key = entry.getKey();
+            //Integer value = entry.getValue();
+
+            if(key == BroadcastService.staticconversationID){
+
+
+                ConversationModel   conversationModel = entry.getValue();
+                isRated = conversationModel.isRated();
+
+            }
+        }
+
+
+        return  isRated;
+
+
+    }
+
+
+    private void write2SharedPrefrence(String key,boolean Value){
+        SharedPreferences sharedPref = ConversationActivity.this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(key, Value);
+        editor.commit();
+
+
+    }
+
+
+    private boolean get4rmSharedPreference(String key){
+
+        SharedPreferences sharedPref =  ConversationActivity.this.getPreferences(Context.MODE_PRIVATE);
+
+
+        boolean isRated = sharedPref.getBoolean(key, false);
+
+
+
+        return  isRated;
 
     }
 }

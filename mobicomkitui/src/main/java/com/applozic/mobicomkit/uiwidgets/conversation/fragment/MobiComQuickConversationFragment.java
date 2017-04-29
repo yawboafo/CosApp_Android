@@ -2,6 +2,7 @@ package com.applozic.mobicomkit.uiwidgets.conversation.fragment;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -32,6 +33,19 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.applozic.mobicomkit.api.account.user.MobiComUserPreference;
 import com.applozic.mobicomkit.api.conversation.Message;
 import com.applozic.mobicomkit.api.conversation.SyncCallService;
@@ -46,9 +60,11 @@ import com.applozic.mobicomkit.contact.BaseContactService;
 import com.applozic.mobicomkit.uiwidgets.ApplozicApplication;
 import com.applozic.mobicomkit.uiwidgets.AlCustomizationSettings;
 import com.applozic.mobicomkit.uiwidgets.Clive.RatingDialog;
+import com.applozic.mobicomkit.uiwidgets.Clive.VolleySingleton;
 import com.applozic.mobicomkit.uiwidgets.R;
 import com.applozic.mobicomkit.uiwidgets.conversation.ConversationListView;
 import com.applozic.mobicomkit.uiwidgets.conversation.ConversationUIService;
+import com.applozic.mobicomkit.uiwidgets.conversation.activity.ConversationActivity;
 import com.applozic.mobicomkit.uiwidgets.conversation.activity.MobiComKitActivityInterface;
 import com.applozic.mobicomkit.uiwidgets.conversation.adapter.QuickConversationAdapter;
 import com.applozic.mobicomkit.uiwidgets.instruction.InstructionUtil;
@@ -68,10 +84,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 /**
  * Created by devashish on 10/2/15.
  */
-public class MobiComQuickConversationFragment extends Fragment implements SearchListFragment ,RatingDialog.OnFragmentInteractionListener{
+public class MobiComQuickConversationFragment extends Fragment implements SearchListFragment {
 
     public static final String QUICK_CONVERSATION_EVENT = "quick_conversation";
     protected ConversationListView listView = null;
@@ -104,7 +122,8 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
     String[] menuItems = null;
     Conversation conversationTopicDetails;
 
-
+    private VolleySingleton volleySingleton;
+    private RequestQueue requestQueue;
     public ConversationListView getListView() {
         return listView;
     }
@@ -205,6 +224,8 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                Log.d("Long Click","i was long clicked");
                 ((MobiComKitActivityInterface) getActivity()).startContactActivityForResult();
             }
         };
@@ -258,20 +279,13 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
             isUserPresentInGroup =  ChannelService.getInstance(getActivity()).processIsUserPresentInChannel(message.getGroupId());
         }
 
-        try {
 
-
-            conversationTopicDetails = ConversationDatabaseService.getInstance(getActivity()).getConversationByConversationId(BroadcastService.staticconversationID);
-        }catch (Exception e){
-
-            e.printStackTrace();
-        }
 
 
 
         try {
 
-            String TopicDetails = conversationTopicDetails.getTopicDetail();
+            String TopicDetails = conversation.getTopicDetail();
 
             JSONObject jObject  = new JSONObject(TopicDetails);
             repID = jObject.getString("key1");
@@ -296,40 +310,18 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
 
         for (int i = 0; i < menuItems.length; i++) {
 
-            if(menuItems[i].equals("Mark as Resolved") && customerID.equals(ApplozicApplication.cosappUserID)){
+            if(menuItems[i].equals("Mark as Resolved") && customerID.equals(ApplozicApplication.cosappUserID) /**&& get4rmSharedPreference("markasread"+BroadcastService.staticconversationID.toString())== false**/){
 
               continue;
             }
 
 
-            if(menuItems[i].equals("Rate this chat") && !customerID.equals(ApplozicApplication.cosappUserID)){
+            if(menuItems[i].equals("Rate this chat")){
 
                 continue;
             }
 
-          /**  if ((message.getGroupId() == null || channel != null && Channel.GroupType.GROUPOFTWO.getValue().equals(channel.getType())) &&  (menuItems[i].equals("Delete group") ||
-                    menuItems[i].equals("Exit group"))) {
-                continue;
-            }
 
-
-
-            if (menuItems[i].equals("Exit group") && (isChannelDeleted  || !isUserPresentInGroup)) {
-                continue;
-            }
-
-            if (menuItems[i].equals("Delete group") &&  ( isUserPresentInGroup || !isChannelDeleted)) {
-                continue;
-            }**/
-
-         /**   if (menuItems[i].equals("Rate this Chat") && (customerID  == repID)) {
-                continue;
-            }
-
-
-            if (menuItems[i].equals("Mark as Resolved") && (customerID  != repID)) {
-                continue;
-            }**/
 
             menu.add(Menu.NONE, i, i, menuItems[i]);
 
@@ -401,6 +393,29 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
                             public void onClick(DialogInterface dialogInterface, int i) {
 
 
+                                try {
+
+                                    String TopicDetails = conversationTopicDetails.getTopicDetail();
+
+                                    JSONObject jObject  = new JSONObject(TopicDetails);
+                                    repID = jObject.getString("key1");
+                                    customerID = jObject.getString("key2");
+                                    String companyID = jObject.getString("value1");
+                                    String chatsessionID = conversationTopicDetails.getTopicId();
+
+
+                                    makeasresolved(chatsessionID,companyID);
+
+
+
+                                    //   ApplozicApplication.SaveConversationChat(conversationChat);
+
+
+
+                                }catch (Exception e){
+
+                                    e.printStackTrace();
+                                }
 
                             }
                         });
@@ -842,10 +857,9 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         });
     }
 
-    @Override
-    public void onFragmentInteraction(Uri uri) {
 
-    }
+
+
 
 
     public class DownloadConversation extends AsyncTask<Void, Integer, Long> {
@@ -1045,5 +1059,210 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         ft.addToBackStack(null);
 
         dialogFragment.show(ft, tag);
+    }
+
+    SweetAlertDialog pDialog = null;
+    private void makeasresolved(String chat_session, String company_id){
+
+
+        pDialog = new SweetAlertDialog(getActivity(), SweetAlertDialog.PROGRESS_TYPE);
+        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        pDialog.setTitleText("Good Job ..");
+        pDialog.setCancelable(false);
+        pDialog.show();
+
+        Log.d("companies","loading from initiateChat");
+
+        final HashMap<String, String> params = new HashMap<String, String>();
+
+/*
+* is_rate_rep
+chat_session
+company_id
+rating_value
+review_text
+*
+*
+*
+* */
+
+/*
+*
+* is_end_conversation
+chat_session_id
+company_id
+*
+* */
+        params.put("is_end_conversation",""+ "1");
+        params.put("chat_session",chat_session);
+        params.put("company_id",company_id);
+
+
+
+
+
+
+        volleySingleton= VolleySingleton.getsInstance(getActivity());
+        requestQueue=VolleySingleton.getRequestQueue(getActivity());
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,
+                ApplozicApplication.BASE_URL,
+                new JSONObject(params),
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        pDialog.dismiss();
+                        try {
+                            Log.d("Params",response.toString()+"");
+                            JSONObject object = response.optJSONObject("ecoachlabs");
+                            String statuscode = object.getString("status");
+                            String message = object.getString("msg");
+
+                            if (!statuscode.equals("201")) {
+
+                                new SweetAlertDialog(getActivity(), SweetAlertDialog.ERROR_TYPE)
+                                        .setTitleText("Sorry,Try Again")
+                                        .setContentText(message)
+                                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                            @Override
+                                            public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                                sweetAlertDialog.dismiss();
+
+                                            }
+                                        })
+                                        .show();
+
+                            } else if (statuscode.equals("201")) {
+                                //getConversationDetailsFromFileUpdateRating();
+
+                                write2SharedPrefrence("markasread"+BroadcastService.staticconversationID.toString(),true);
+
+                                new SweetAlertDialog(getActivity(), SweetAlertDialog.SUCCESS_TYPE)
+                                        .setTitleText("Completed")
+                                        .setContentText(message)
+                                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                            @Override
+                                            public void onClick(SweetAlertDialog sweetAlertDialog) {
+
+                                                sweetAlertDialog.dismiss();
+
+                                            }
+                                        })
+                                        .show();
+//
+
+                            }
+
+
+
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+
+                        //  Message.messageShort(MyApplication.getAppContext(),""+tokenValue+"\n"+response.toString()+"\n"+booleaner);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error)   {
+
+
+
+                //  dialogs.SimpleWarningAlertDialog("Transmission Error", "Connection Failed").show();
+                Log.d("volley.Response", error.toString());
+
+                pDialog.hide();
+                new SweetAlertDialog(getActivity(), SweetAlertDialog.ERROR_TYPE)
+                        .setTitleText("Oops...")
+                        .setContentText("Something went wrong!")
+                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                sweetAlertDialog.dismiss();
+                            }
+                        })
+                        .show();
+
+
+
+
+                if (error instanceof TimeoutError) {
+                    // dialogs.SimpleWarningAlertDialog("Network Slacking", "Time Out Error").show();
+                    Log.d("volley", "NoConnectionError.....TimeoutError..");
+
+
+                    //     dialogs.SimpleWarningAlertDialog("Network Slacking", "Time Out Error");
+
+
+
+                } else if(error instanceof NoConnectionError){
+
+                    // dialogs.SimpleWarningAlertDialog("No Internet Connections Detected", "No Internet Connection").show();
+
+                }
+
+
+                else if (error instanceof AuthFailureError) {
+                    //  Log.d("volley", "AuthFailureError..");
+                    // dialogs.SimpleWarningAlertDialog("Authentication Failure","AuthFailureError").show();
+
+
+                } else if (error instanceof ServerError) {
+                    // dialogs.SimpleWarningAlertDialog("Server Malfunction", "Server Error").show();
+
+                } else if (error instanceof NetworkError) {
+                    // dialogs.SimpleWarningAlertDialog("Network Error", "Network Error").show();
+
+                } else if (error instanceof ParseError) {
+                    // dialogs.SimpleWarningAlertDialog("Parse Error","Parse Error").show();
+                }
+
+            }
+        }) {
+            @Override
+            public java.util.Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                headers.put("auth-key",ApplozicApplication.cosappUserID);
+                return headers;
+            }
+        };
+        int socketTimeout = 480000000;//8 minutes - change to what you want
+        RetryPolicy policy = new DefaultRetryPolicy(
+                socketTimeout,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        request.setRetryPolicy(policy);
+        requestQueue.add(request);
+        Log.d("oxinbo","Server Logs"+params.toString());
+    }
+
+
+    private void write2SharedPrefrence(String key,boolean Value){
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(key, Value);
+        editor.commit();
+
+
+    }
+
+
+    private boolean get4rmSharedPreference(String key){
+
+        SharedPreferences sharedPref =  getActivity().getPreferences(Context.MODE_PRIVATE);
+
+
+        boolean isRated = sharedPref.getBoolean(key, false);
+
+
+
+        return  isRated;
+
     }
 }

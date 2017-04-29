@@ -1,14 +1,17 @@
 package com.applozic.mobicomkit.uiwidgets.Clive.Models;
 
+import java.io.Serializable;
+
 /**
  * Created by apple on 4/29/17.
  */
 
-public class ConversationModel {
+public class ConversationModel implements Serializable{
+    private static final long serialVersionUID = 2L;
 
 
     String chat_session;
-    String conversationid;
+    Integer conversationid;
     String repID;
     String customerID;
     String companyID;
@@ -23,11 +26,11 @@ public class ConversationModel {
         this.chat_session = chat_session;
     }
 
-    public String getConversationid() {
+    public Integer getConversationid() {
         return conversationid;
     }
 
-    public void setConversationid(String conversationid) {
+    public void setConversationid(Integer conversationid) {
         this.conversationid = conversationid;
     }
 

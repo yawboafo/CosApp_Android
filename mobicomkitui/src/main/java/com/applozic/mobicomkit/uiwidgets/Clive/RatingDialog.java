@@ -6,13 +6,16 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.applozic.mobicomkit.uiwidgets.R;
+import com.hsalf.smilerating.SmileRating;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -37,7 +40,9 @@ public class RatingDialog extends DialogFragment {
     public RatingDialog() {
         // Required empty public constructor
     }
-
+    String rating = "3";
+    //, ratingvalue;
+    EditText ratingTxt;
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -78,21 +83,52 @@ public class RatingDialog extends DialogFragment {
         super.onViewCreated(view, savedInstanceState);
 
 
+        Button notnow = (Button)view.findViewById(R.id.notnow);
+        notnow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().finish();
+                getDialog().dismiss();
+            }
+        });
+
+         ratingTxt = (EditText)view.findViewById(R.id.editText);
+
+
+        SmileRating smile_rating = (SmileRating)view.findViewById(R.id.smile_rating);
+        smile_rating.setOnRatingSelectedListener(new SmileRating.OnRatingSelectedListener() {
+            @Override
+            public void onRatingSelected(int level, boolean reselected) {
+
+
+
+
+                rating = ""+level;
+
+                Log.d("selectedR",rating);
+                // level is from 1 to 5
+                // reselected is false when user selects different smiley that previously selected one
+                // true when the same smiley is selected.
+                // Except if it first time, then the value will be false.
+            }
+        });
         Button submitRatingButton = (Button)view.findViewById(R.id.submitRatingButton);
         submitRatingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                getActivity().finish();
+                //getActivity().finish();
                 getDialog().dismiss();
+
+                mListener.onFragmentInteraction(rating,ratingTxt.getText().toString());
             }
         });
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(String chat_session, String company_id, String rating_value ,String review_text) {
+    public void onButtonPressed(String rating,String ratingvalue) {
         if (mListener != null) {
-            mListener.onFragmentInteraction(chat_session,company_id,rating_value,review_text);
+            mListener.onFragmentInteraction( rating, ratingvalue);
         }
     }
 
@@ -125,6 +161,6 @@ public class RatingDialog extends DialogFragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction(String chat_session, String company_id, String rating_value ,String review_text);
+        void onFragmentInteraction(String rating,String ratingvalue);
     }
 }
