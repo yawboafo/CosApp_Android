@@ -124,7 +124,7 @@ public class HomeFragment extends Fragment {
 
         setSliderLayout(view);
 
-Log.d("recomendation Size",""+VerifiedCompanies.getRecomendedCompanies().size());
+
 
         if(VerifiedCompanies.getRecomendedCompanies().size() == 0){
 
@@ -186,7 +186,6 @@ try{
 }
 
 
-
     }
 
     public void setSliderLayout(View view){
@@ -208,14 +207,11 @@ try{
 
     public void SetRecycleView(View view){
 
-        bottomrecycler = (RecyclerView) view.findViewById(R.id.bottomRecycleView);
 
         CategoriesAdapter categoriesAdapter = new CategoriesAdapter(getContext(),Categories.getAllCategories());
         layoutManager = new GridLayoutManager(getActivity(), 2);
 
-        bottomrecycler.setAdapter(categoriesAdapter);
-        bottomrecycler.setLayoutManager(layoutManager);
-        bottomrecycler.setNestedScrollingEnabled(false);
+        bottomrecycler = (RecyclerView) view.findViewById(R.id.bottomRecycleView);
         bottomrecycler.addOnItemTouchListener(new RecyclerTouchListener(getActivity(), bottomrecycler, new ClickListener() {
             @Override
             public void onClick(View view, int position) {
@@ -246,6 +242,10 @@ try{
 
             }
         }));
+        bottomrecycler.setAdapter(categoriesAdapter);
+        bottomrecycler.setLayoutManager(layoutManager);
+        bottomrecycler.setNestedScrollingEnabled(false);
+
 
 
     }
@@ -302,8 +302,7 @@ try{
     final HashMap<String, String> params = new HashMap<String, String>();
 
      Recommendation.truncate(Recommendation.class);
-
-    params.put("fetch_public_info",""+ "1");
+        params.put("fetch_public_info",""+ "1");
     params.put("scope","recommendation");
     params.put("rec_lat","0.0");
     params.put("rec_long","0.0");
@@ -430,7 +429,7 @@ try{
                 String company_name = obj.getString("companyName");
                 companies.setCompanyName(company_name);
 
-
+                companies.setIsRepOnline("false");
 
                 String companyCategory = obj.getString("companyCategory");
                 companies.setCompanyCategory(companyCategory);

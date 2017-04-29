@@ -1,6 +1,7 @@
 package com.ecoach.cosapp.RecycleAdapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
@@ -33,7 +34,7 @@ public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapterVie
     private LayoutInflater inflater;
     List<Departments> data= Collections.emptyList();
     View view=null;
-
+    int selected_position = -1;
     public DepartmentAdapter(Context context, List<Departments> data) {
         inflater= LayoutInflater.from(context);
         this.data=data;
@@ -57,15 +58,32 @@ public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapterVie
 
     @Override
     public void onBindViewHolder(DepartmentAdapterViewHolder
-                                         holder, int position) {
+                                         holder, final int position) {
 
         final Departments items=data.get(position);
-
+        if(selected_position == position){
+            // Here I am just highlighting the background
+            holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.primary_dark_color));
+        }else{
+            holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+        }
 
         holder.txthiddenId.setText(items.getDepartmentid());
         holder.departmentName.setText(items.getDepartmentname().toString());
 
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // Updating old as well as new positions
+                notifyItemChanged(selected_position);
+                selected_position = position;
+                notifyItemChanged(selected_position);
+
+                // Do your another stuff for your onClick
+            }
+        });
 
     }
 

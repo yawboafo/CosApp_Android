@@ -33,6 +33,11 @@ public class VerifiedCompanies extends Model {
     private String companyCuid;
 
 
+
+    @Column(name = "isRepOnline")
+    private String isRepOnline ;
+
+
     @Column(name = "companyStatus")
     private String companyStatus;
 
@@ -112,9 +117,13 @@ public class VerifiedCompanies extends Model {
     }
 
 
+    public String getIsRepOnline() {
+        return isRepOnline;
+    }
 
-
-
+    public void setIsRepOnline(String isRepOnline) {
+        this.isRepOnline = isRepOnline;
+    }
 
     public String getUserID() {
         return userID;
@@ -306,6 +315,16 @@ public class VerifiedCompanies extends Model {
                 .where("companyName = ?",companyName)
                 .executeSingle();
     }
+
+    public static List<VerifiedCompanies> getCompanyByLikeName(String companyName) {
+        return new Select()
+                .from(VerifiedCompanies.class)
+                .where("companyName Like ?","%"+companyName+"%")
+                .execute();
+
+        //%or%
+    }
+
     public static VerifiedCompanies getCompaniesByID(String company_id,String category_id) {
 
         return new Select()

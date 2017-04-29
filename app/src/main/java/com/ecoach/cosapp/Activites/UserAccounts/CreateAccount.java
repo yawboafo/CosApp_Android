@@ -2,6 +2,7 @@ package com.ecoach.cosapp.Activites.UserAccounts;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,6 +38,11 @@ import com.ecoach.cosapp.Http.VolleySingleton;
 import com.ecoach.cosapp.R;
 import com.ecoach.cosapp.Utilities.GPSTracker;
 import com.ecoach.cosapp.Utilities.ViewUtils;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.jakewharton.processphoenix.ProcessPhoenix;
 
 import org.json.JSONArray;
@@ -67,6 +73,7 @@ public class CreateAccount extends AppCompatActivity {
     String company_lat = "0.0";
     String company_long = "0.0";
     Button indicator1,indicator2,indicator3,indicator4,indicator5;
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -303,7 +310,7 @@ public class CreateAccount extends AppCompatActivity {
 
                         try {
 
-                            pDialog.hide();
+
 
                             Log.d("logs",response.toString());
 
@@ -315,7 +322,7 @@ public class CreateAccount extends AppCompatActivity {
                             String message = object.getString("msg");
 
                             if(!statuscode.equals("201")){
-
+                                pDialog.hide();
                                 new SweetAlertDialog(CreateAccount.this, SweetAlertDialog.ERROR_TYPE)
                                         .setTitleText("Sorry,Try Again")
                                         .setContentText(message)
@@ -443,7 +450,8 @@ public class CreateAccount extends AppCompatActivity {
             appInstanceSettings.setUserkey(ukey);
             appInstanceSettings.save();
 
-            ProcessPhoenix.triggerRebirth(CreateAccount.this);
+
+            fireBaseRegister(email,ukey);
 
 
         } catch (Exception e) {
@@ -451,6 +459,56 @@ public class CreateAccount extends AppCompatActivity {
         }
 
 
+
+    }
+
+
+    private void fireBaseRegister(String email,String password){
+
+
+
+
+        try {
+            auth = FirebaseAuth.getInstance();
+
+
+
+
+            auth.createUserWithEmailAndPassword(email,password)
+                    .addOnCompleteListener(CreateAccount.this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+
+                            pDialog.hide();
+
+                            if(task.isComplete()){
+
+                                ProcessPhoenix.triggerRebirth(CreateAccount.this);
+
+                            }
+
+
+
+
+                        }
+                    }).addOnSuccessListener(CreateAccount.this, new OnSuccessListener<AuthResult>() {
+                @Override
+                public void onSuccess(AuthResult authResult) {
+                    Log.d("result","fire base onSuccess"+authResult.getUser().getUid()) ;
+                    // loginVolley();
+                }
+            });
+
+
+
+        }catch (Exception e){
+
+
+            e.printStackTrace();
+
+        }finally {
+
+        }
 
     }
 }

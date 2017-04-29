@@ -1,0 +1,272 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="400dp"
+    tools:context="com.ecoach.cosapp.Fragments.SelectDepartmentDialog">
+
+    <!-- TODO: Update blank fragment layout -->
+    <RelativeLayout
+        android:id="@+id/appbarr"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/colorPrimary">
+
+        <TextView
+            android:id="@+id/textView10"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/closebut"
+            android:textSize="18sp"
+            android:padding="15dp"
+            android:text="Add Rep"
+            android:textColor="@android:color/white" />
+
+        <info.hoang8f.widget.FButton
+            android:id="@+id/closebut"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:text="Cancel"
+            android:textColor="@android:color/white"
+            app:buttonColor="@android:color/holo_red_dark"
+            app:cornerRadius="0dp"
+            app:shadowEnabled="false" />
+    </RelativeLayout>
+
+  <ViewFlipper
+      android:id="@+id/accountSelectViewflipper"
+      android:layout_below="@+id/appbarr"
+      android:layout_width="match_parent"
+      android:layout_height="400dp">
+
+
+
+
+      <RelativeLayout
+          android:paddingLeft="15dp"
+          android:paddingRight="15dp"
+          android:id="@+id/relativeLayout6"
+          android:layout_width="match_parent"
+          android:layout_height="350dp">
+
+          <TextView
+              android:id="@+id/padetitle"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="10dp"
+              android:textColor="@color/colorPrimaryDark"
+              android:text="Select Department "
+              android:textSize="16sp"
+              android:textStyle="bold" />
+
+          <android.support.v7.widget.RecyclerView
+              android:padding="3dp"
+              android:id="@+id/departments"
+              android:layout_width="match_parent"
+              android:layout_height="250dp"
+              android:layout_below="@+id/padetitle">
+
+
+          </android.support.v7.widget.RecyclerView>
+
+
+      </RelativeLayout>
+
+
+      <RelativeLayout
+          android:paddingLeft="15dp"
+          android:paddingRight="15dp"
+          android:id="@+id/relativeLayoutSelComp"
+          android:layout_width="match_parent"
+          android:layout_height="350dp">
+
+          <TextView
+              android:id="@+id/Selpagetitle"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="10dp"
+              android:textColor="@color/colorPrimaryDark"
+              android:text="Select Account to Use "
+              android:textSize="16sp"
+              android:textStyle="bold" />
+          <Switch
+              android:layout_below="@+id/Selpagetitle"
+              android:id="@+id/switch2"
+              android:padding="10dp"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_alignParentEnd="true"
+
+
+              android:text="Chat with Personal Account" />
+          <android.support.v7.widget.RecyclerView
+              android:padding="3dp"
+              android:id="@+id/companiesList"
+              android:layout_width="match_parent"
+              android:layout_height="200dp"
+              android:layout_below="@+id/switch2">
+
+
+          </android.support.v7.widget.RecyclerView>
+          <RelativeLayout
+              android:layout_marginTop="10dp"
+              android:layout_alignParentBottom="true"
+              android:layout_below="@+id/companiesList"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+              <info.hoang8f.widget.FButton
+                  android:id="@+id/backButton"
+                  android:layout_width="100dp"
+                  android:layout_height="wrap_content"
+                  android:text="Back"
+                  android:textColor="@android:color/white"
+                  app:buttonColor="@color/colorAccent"
+                  app:cornerRadius="0dp"
+                  app:shadowEnabled="false"
+                  android:layout_marginLeft="10dp"
+                  android:layout_marginRight="10dp"
+                  android:layout_marginStart="20dp"
+                  android:layout_alignParentStart="true"
+
+                  android:layout_alignParentBottom="true" />
+              <info.hoang8f.widget.FButton
+                  android:id="@+id/progressButton"
+                  android:layout_width="100dp"
+                  android:layout_height="wrap_content"
+                  android:text="Continue"
+                  android:textColor="@android:color/white"
+                  app:buttonColor="@color/colorAccent"
+                  app:cornerRadius="0dp"
+                  app:shadowEnabled="false"
+                  android:layout_marginLeft="10dp"
+                  android:layout_marginRight="10dp"
+                  android:layout_marginEnd="15dp"
+
+                  android:layout_alignParentBottom="true"
+                  android:layout_alignParentEnd="true" />
+
+          </RelativeLayout>
+
+
+
+      </RelativeLayout>
+
+
+      <RelativeLayout
+
+          android:paddingLeft="15dp"
+          android:paddingRight="15dp"
+          android:id="@+id/summary"
+          android:layout_width="match_parent"
+          android:layout_height="350dp">
+
+          <TextView
+              android:id="@+id/companyToContactDetails"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_centerHorizontal="true"
+
+              android:layout_marginTop="23dp"
+              android:padding="5dp"
+              android:text="Contact "
+              android:textColor="@android:color/background_dark"
+              android:textStyle="bold" />
+
+          <TextView
+              android:id="@+id/companyToContact"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_alignStart="@+id/companyToContactDetails"
+              android:layout_below="@+id/companyToContactDetails"
+              android:layout_marginTop="10dp"
+              android:padding="5dp"
+              android:text="TextView"
+              android:textStyle="bold" />
+
+          <TextView
+              android:id="@+id/department"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_alignStart="@+id/companyToContact"
+              android:layout_below="@+id/companyToContact"
+              android:layout_marginTop="11dp"
+              android:padding="5dp"
+              android:text="TextView"
+              android:textStyle="bold" />
+
+          <TextView
+              android:id="@+id/usingAccount"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_alignStart="@+id/companyToContact"
+              android:layout_below="@+id/department"
+              android:layout_marginTop="11dp"
+              android:padding="10dp"
+              android:text="TextView"
+              android:textColor="@android:color/holo_red_dark"
+              android:textStyle="bold" />
+
+          <RelativeLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_alignParentBottom="true"
+              android:layout_alignParentStart="true">
+
+
+              <info.hoang8f.widget.FButton
+                  android:id="@+id/backButt"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Back"
+                  android:textColor="@android:color/white"
+                  app:buttonColor="@color/colorAccent"
+                  app:cornerRadius="0dp"
+                  app:shadowEnabled="false"
+                  android:layout_alignParentTop="true"
+                  android:layout_alignParentStart="true" />
+
+              <info.hoang8f.widget.FButton
+                  android:layout_marginLeft="10dp"
+                  android:layout_alignRight="@+id/backButt"
+                  android:id="@+id/startChat"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentEnd="true"
+                  android:layout_alignParentTop="true"
+                  android:padding="20dp"
+                  android:text="Start Chat"
+                  android:textColor="@android:color/white"
+                  app:buttonColor="@color/colorAccent"
+                  app:cornerRadius="0dp"
+                  app:shadowEnabled="false"
+                  android:layout_toEndOf="@+id/backButt" />
+          </RelativeLayout>
+
+      </RelativeLayout>
+
+
+
+
+  </ViewFlipper>
+
+    <com.wang.avi.AVLoadingIndicatorView
+
+        android:layout_gravity="center"
+        android:id="@+id/avi"
+        android:foregroundGravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/AVLoadingIndicatorView"
+        android:layout_centerInParent="true"
+        android:visibility="invisible"
+        app:indicatorName="BallSpinFadeLoaderIndicator"
+        app:indicatorColor="@color/colorPrimary"
+        tools:layout_editor_absoluteY="179dp"
+        tools:layout_editor_absoluteX="179dp" />
+
+
+
+</RelativeLayout>

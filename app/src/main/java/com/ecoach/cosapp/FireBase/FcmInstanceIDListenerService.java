@@ -1,11 +1,15 @@
 package com.ecoach.cosapp.FireBase;
 
+import android.content.Intent;
 import android.util.Log;
 
 import com.applozic.mobicomkit.Applozic;
 import com.applozic.mobicomkit.api.account.register.RegisterUserClientService;
 import com.applozic.mobicomkit.api.account.register.RegistrationResponse;
 import com.applozic.mobicomkit.api.account.user.MobiComUserPreference;
+import com.ecoach.cosapp.Activites.UserAccounts.LoginActivity;
+import com.ecoach.cosapp.Application.Application;
+import com.ecoach.cosapp.Http.FireBaseRegister;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
@@ -20,7 +24,9 @@ public class FcmInstanceIDListenerService extends FirebaseInstanceIdService {
         super.onTokenRefresh();
 
         String registrationId = FirebaseInstanceId.getInstance().getToken();
-        Log.i(TAG, "Found Registration Id:" + registrationId);
+        Application.getFireBaseToken  = registrationId;
+        startService(new Intent(getApplicationContext(), FireBaseRegister.class));
+        Log.i(TAG, "Found Registration Id:" + Application.getFireBaseToken );
         Applozic.getInstance(this).setDeviceRegistrationId(registrationId);
         if (MobiComUserPreference.getInstance(this).isRegistered()) {
             try {

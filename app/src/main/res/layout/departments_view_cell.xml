@@ -21,10 +21,11 @@
             android:text="TextView" />
 
         <Button
-            android:drawableEnd="@drawable/ic_more_vert"
-android:visibility="invisible"
+            android:visibility="invisible"
             android:background="@android:color/transparent"
             android:id="@+id/morebutton"
+            android:textSize="10sp"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"

@@ -8,9 +8,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.ImageButton;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
+import com.ecoach.cosapp.Application.Application;
+import com.ecoach.cosapp.DataBase.RepAvailablity;
 import com.ecoach.cosapp.DataBase.VerifiedCompanies;
 import com.ecoach.cosapp.R;
 import com.ecoach.cosapp.Utilities.Utility;
@@ -88,6 +93,35 @@ public class MyCompaniesAdapter extends RecyclerView.Adapter<MyCompaniesAdapterV
 
 
 
+        try{
+
+            RepAvailablity repAvailablity = RepAvailablity.getRepAvailablityByID(items.getCompanyCuid(), Application.AppUserKey);
+            if(repAvailablity!= null){
+
+                if(repAvailablity.isAvailability()){
+                    holder.switcher.setChecked(true);
+                    holder.switcher.setText("Online");
+                    holder.switcher.setTextColor(context.getResources().getColor(R.color.colorGreen));
+                }else{
+                    holder.switcher.setChecked(false);
+                    holder.switcher.setText("Offline");
+                    holder.switcher.setTextColor(context.getResources().getColor(R.color.red_btn_bg_color));
+
+                }
+            }
+
+
+        }catch (Exception e){
+            holder.switcher.setChecked(false);
+            holder.switcher.setText("Offline");
+            holder.switcher.setTextColor(context.getResources().getColor(R.color.red_btn_bg_color));
+            e.printStackTrace();
+        }
+
+
+
+
+
     }
 
     @Override
@@ -101,6 +135,7 @@ class MyCompaniesAdapterViewHolder extends RecyclerView.ViewHolder {
     TextView txthiddenId,companyName,companyCategory,acoountHolderType;
 
     CircleImageView iconView;
+    Switch switcher;
 
     public MyCompaniesAdapterViewHolder(View itemView) {
         super(itemView);
@@ -116,7 +151,7 @@ class MyCompaniesAdapterViewHolder extends RecyclerView.ViewHolder {
         companyName = (TextView) itemView.findViewById(R.id.rep_companyName);
         companyCategory=(TextView)itemView.findViewById(R.id.companyCategory) ;
         acoountHolderType=(TextView)itemView.findViewById(R.id.acoountHolderType);
-
+        switcher=(Switch) itemView.findViewById(R.id.switcher);
 
 
 

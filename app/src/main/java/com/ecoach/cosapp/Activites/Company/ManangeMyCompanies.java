@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
@@ -19,7 +20,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.query.Delete;
@@ -42,6 +46,7 @@ import com.ecoach.cosapp.Application.Application;
 import com.ecoach.cosapp.DataBase.AppInstanceSettings;
 import com.ecoach.cosapp.DataBase.Departments;
 import com.ecoach.cosapp.DataBase.GalleryStorage;
+import com.ecoach.cosapp.DataBase.RepAvailablity;
 import com.ecoach.cosapp.DataBase.VerifiedCompanies;
 import com.ecoach.cosapp.Http.APIRequest;
 import com.ecoach.cosapp.Http.VolleySingleton;
@@ -59,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
+import info.hoang8f.widget.FButton;
 
 public class ManangeMyCompanies extends AppCompatActivity implements  Addcompany.onBackerPressed{
     private SwipeRefreshLayout refreshLayout;
@@ -129,21 +135,56 @@ public class ManangeMyCompanies extends AppCompatActivity implements  Addcompany
         //new RecyclerTouchListener(CompaniesActivity.this, recyclerView, new ClickListener()
         myCompanies.addOnItemTouchListener(new RecyclerTouchListener(ManangeMyCompanies.this, myCompanies, new ClickListener() {
             @Override
-            public void onClick(View view, int position) {
+            public void onClick(final View view, int position) {
 
+                final TextView txthiddenId=(TextView)view.findViewById(R.id.companyid);
 
-                TextView txthiddenId=(TextView)view.findViewById(R.id.companyid);
                 try {
-                    String id = txthiddenId.getText().toString();
-                    Application.setSelectedCategoryID(id);
+
+                    //Toast.makeText(ManangeMyCompanies.this,"Hold mouse down ",Toast.LENGTH_LONG).show();
+
+                  final  Switch switcher =(Switch)view.findViewById(R.id.switcher);
+                    switcher.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
 
-                    Log.d("company id", "selected company ID" + Application.getSelectedCategoryID());
-                    VerifiedCompanies verifiedCompanies = VerifiedCompanies.getCompanyByID(Application.getSelectedCategoryID());
-                    Application.setSelectedCompanyObbject(verifiedCompanies);
-                    Log.d("company id", "selected company Name" + verifiedCompanies.getCompanyName());
-                    Intent intent = new Intent(ManangeMyCompanies.this,MyCompanyDetails.class);
-                    startActivity(intent);
+
+                            if(isChecked){
+                                buttonView.setChecked(true);
+                                buttonView.setText("Online");
+                                buttonView.setTextColor(ManangeMyCompanies.this.getResources().getColor(R.color.colorGreen));
+
+                                repIsOnline("available",txthiddenId.getText().toString(),buttonView);
+                            }else{
+                                buttonView.setChecked(false);
+                                buttonView.setText("Offline");
+                                buttonView.setTextColor(ManangeMyCompanies.this.getResources().getColor(R.color.red_btn_bg_color));
+                                repIsOnline("unavailable",txthiddenId.getText().toString(),buttonView);
+                            }
+                        }
+                    });
+
+
+                    FButton moreDetails = (FButton)view.findViewById(R.id.moreDetails);
+                    moreDetails.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+
+                            String id = txthiddenId.getText().toString();
+                            Application.setSelectedCategoryID(id);
+
+
+                            Log.d("company id", "selected company ID" + Application.getSelectedCategoryID());
+                            VerifiedCompanies verifiedCompanies = VerifiedCompanies.getCompanyByID(Application.getSelectedCategoryID());
+                            Application.setSelectedCompanyObbject(verifiedCompanies);
+                            Log.d("company id", "selected company Name" + verifiedCompanies.getCompanyName());
+                            Intent intent = new Intent(ManangeMyCompanies.this,MyCompanyDetails.class);
+                            startActivity(intent);
+
+                        }
+                    });
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -153,8 +194,184 @@ public class ManangeMyCompanies extends AppCompatActivity implements  Addcompany
             @Override
             public void onLongClick(View view, int position) {
 
+                try{
+
+
+                }catch (Exception e){
+
+                    e.printStackTrace();
+                }
+
             }
         }));
+    }
+
+
+    private void repIsOnline(final String availablity,
+                             final String companyID,
+                             final CompoundButton switcher) {
+
+
+
+
+            final HashMap<String, String> params = new HashMap<String, String>();
+
+
+
+
+            params.put("is_update_rep_availability","1");
+            params.put("company_id",companyID);
+            params.put("availability",availablity);
+
+
+
+            volleySingleton= VolleySingleton.getsInstance();
+            requestQueue=VolleySingleton.getRequestQueue();
+
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,
+                    APIRequest.BASE_URL,
+                    new JSONObject(params),
+                    new Response.Listener<JSONObject>() {
+                        //Log.d("Params",params+"");
+                        @Override
+                        public void onResponse(JSONObject response) {
+
+
+                            try {
+                                Log.d("Params",response.toString()+"");
+                                JSONObject object = response.optJSONObject("ecoachlabs");
+                                String statuscode = object.getString("status");
+                                String message = object.getString("msg");
+
+                                if (statuscode.equals("201")) {
+                                    // switcher.setChecked(false);
+                                    //  switcher.setText("Offline");
+                                    if (availablity.equals("available")) {
+
+                                        RepAvailablity repAvailablity = RepAvailablity.getRepAvailablityByID(companyID, Application.AppUserKey);
+                                        if (repAvailablity == null) {
+                                            repAvailablity = new RepAvailablity();
+                                        }
+                                        repAvailablity.setCompany_id(companyID);
+                                        repAvailablity.setCustomer_id(Application.AppUserKey);
+                                        repAvailablity.setAvailability(true);
+                                        repAvailablity.save();
+                                        switcher.setText("Online");
+                                        switcher.setTextColor(ManangeMyCompanies.this.getResources().getColor(R.color.colorGreen));
+
+                                    } else {
+
+                                        RepAvailablity repAvailablity = RepAvailablity.getRepAvailablityByID(companyID, Application.AppUserKey);
+                                        if (repAvailablity == null) {
+                                            repAvailablity = new RepAvailablity();
+                                        }
+                                        repAvailablity.setCompany_id(companyID);
+                                        repAvailablity.setCustomer_id(Application.AppUserKey);
+                                        repAvailablity.setAvailability(false);
+                                        repAvailablity.save();
+
+                                        switcher.setText("Offline");
+                                        switcher.setTextColor(ManangeMyCompanies.this.getResources().getColor(R.color.red_btn_bg_pressed_color));
+                                    }
+
+                                }else {
+                                    Toast.makeText(ManangeMyCompanies.this,"Failed to Update Availability",Toast.LENGTH_SHORT).show();
+                                }
+
+
+
+
+
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+
+
+                            //  Message.messageShort(MyApplication.getAppContext(),""+tokenValue+"\n"+response.toString()+"\n"+booleaner);
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error)   {
+
+                    Toast.makeText(ManangeMyCompanies.this,"Failed to Update Availability",Toast.LENGTH_SHORT).show();
+                  // switcher.setChecked(false);
+                  //  switcher.setText("Offline");
+
+                    RepAvailablity repAvailablity = RepAvailablity.getRepAvailablityByID(companyID,Application.AppUserKey);
+                    if(repAvailablity == null) {
+                        repAvailablity = new RepAvailablity();
+                    }
+                    repAvailablity.setCompany_id(companyID);
+                    repAvailablity.setCustomer_id(Application.AppUserKey);
+                    repAvailablity.setAvailability(false);
+                    repAvailablity.save();
+                    switcher.setText("Offline");
+                    switcher.setTextColor(ManangeMyCompanies.this.getResources().getColor(R.color.red_btn_bg_pressed_color));
+
+                    //  dialogs.SimpleWarningAlertDialog("Transmission Error", "Connection Failed").show();
+                    Log.d("volley.Response", error.toString());
+
+                    Toast.makeText(ManangeMyCompanies.this,"Failed to Toggle Availability",Toast.LENGTH_LONG).show();
+
+
+
+                    if (error instanceof TimeoutError) {
+                        // dialogs.SimpleWarningAlertDialog("Network Slacking", "Time Out Error").show();
+                        Log.d("volley", "NoConnectionError.....TimeoutError..");
+
+
+                        //     dialogs.SimpleWarningAlertDialog("Network Slacking", "Time Out Error");
+
+
+
+                    } else if(error instanceof NoConnectionError){
+
+                        // dialogs.SimpleWarningAlertDialog("No Internet Connections Detected", "No Internet Connection").show();
+
+                    }
+
+
+                    else if (error instanceof AuthFailureError) {
+                        //  Log.d("volley", "AuthFailureError..");
+                        // dialogs.SimpleWarningAlertDialog("Authentication Failure","AuthFailureError").show();
+
+
+                    } else if (error instanceof ServerError) {
+                        // dialogs.SimpleWarningAlertDialog("Server Malfunction", "Server Error").show();
+
+                    } else if (error instanceof NetworkError) {
+                        // dialogs.SimpleWarningAlertDialog("Network Error", "Network Error").show();
+
+                    } else if (error instanceof ParseError) {
+                        // dialogs.SimpleWarningAlertDialog("Parse Error","Parse Error").show();
+                    }
+
+                }
+            }) {
+                @Override
+                public java.util.Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+                    headers.put("auth-key", AppInstanceSettings.load(AppInstanceSettings.class,1).getUserkey());
+                    return headers;
+                }
+            };
+            int socketTimeout = 480000000;//8 minutes - change to what you want
+            RetryPolicy policy = new DefaultRetryPolicy(
+                    socketTimeout,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+            request.setRetryPolicy(policy);
+            requestQueue.add(request);
+            Log.d("oxinbo","Server Logs"+params.toString());
+
+
+    }
+    private void initiateChat(){
+
+
     }
 
     private void setRecycleView(){
@@ -459,6 +676,8 @@ public class ManangeMyCompanies extends AppCompatActivity implements  Addcompany
 
                 String bio = obj.getString("Bio");
                 companies.setBio(bio);
+
+                companies.setIsRepOnline("false");
 
 
                 String Phone1 = obj.getString("Phone1");

@@ -68,7 +68,7 @@ public class UploadBase64 extends IntentService {
         if (intent != null) {
 
 
-            Log.d("service has started",Application.getCompanyCert());
+          Log.d("service has started",Application.getProfilePic());
            // MultipartVolley("company");
             createAccountVolley();
             /*final String action = intent.getAction();
@@ -104,15 +104,33 @@ base_cert
 * */
 
 
-        params.put("is_base64_upload", "1");
-        params.put("poi", "company");
-        params.put("usage", "multiple");
-        params.put("base_profile_pic", Application.getCompanyLogo());
-       // params.put("base_showcase", Application.getCompanyLogo());
-        params.put("base_chat_bg", Application.getCompanyChatBack());
-        params.put("base_cover", Application.getCompanyCover());
-        params.put("base_cert", Application.getCompanyCert());
-        params.put("company_id", Application.getLast_company_id());
+if(Application.getProfilePic().isEmpty()){
+    params.put("is_base64_upload", "1");
+    params.put("poi", "company");
+    params.put("usage", "multiple");
+    params.put("base_profile_pic", Application.getCompanyLogo());
+    // params.put("base_showcase", Application.getCompanyLogo());
+    params.put("base_chat_bg", Application.getCompanyChatBack());
+    params.put("base_cover", Application.getCompanyCover());
+    params.put("base_cert", Application.getCompanyCert());
+    params.put("company_id", Application.getLast_company_id());
+
+
+}else{
+    params.put("is_base64_upload", "1");
+    params.put("poi", "user");
+    params.put("usage", "multiple");
+    params.put("base_profile_pic", Application.getProfilePic());
+    // params.put("base_showcase", Application.getCompanyLogo());
+   // params.put("base_chat_bg", Application.getCompanyChatBack());
+   // params.put("base_cover", Application.getCompanyCover());
+   // params.put("base_cert", Application.getCompanyCert());
+   // params.put("company_id", Application.getLast_company_id());
+
+
+}
+
+
 
 
 

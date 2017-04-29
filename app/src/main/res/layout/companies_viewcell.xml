@@ -20,7 +20,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <de.hdodenhof.circleimageview.CircleImageView
-        android:src="@drawable/image1"
+        android:src="@drawable/user"
         android:layout_weight="0.3"
         android:layout_width="0dp"
         android:layout_height="55dp"
@@ -77,9 +77,10 @@ android:textColor="@color/cardview_dark_background"
         android:visibility="gone" />
 
     <ImageButton
-        android:background="@color/colorPrimaryDark"
-        android:src="@mipmap/ic_boxchat"
-        android:paddingBottom="10dp"
+android:background="@drawable/ic_chat"
+android:visibility="gone"
+
+        android:padding="1dp"
         android:id="@+id/chatbutton"
         android:layout_width="0dp"
         android:layout_height="match_parent"

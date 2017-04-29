@@ -55,12 +55,12 @@ public class CategoriesFragment extends Fragment {
     private  void setUpRecycleView(View view){
 
         recyclerView = (RecyclerView)view.findViewById(R.id.categoryRecycle);
+        MainCategoryAdapter categoriesAdapter = null;
+try {
+     categoriesAdapter = new MainCategoryAdapter(getContext(), Categories.getAllCategories());
+    layoutManager = new GridLayoutManager(getActivity(), 3);
 
-
-        MainCategoryAdapter categoriesAdapter = new MainCategoryAdapter(getContext(),Categories.getAllCategories());
-        layoutManager = new GridLayoutManager(getActivity(), 3);
-
-
+}catch (Exception e){e.printStackTrace();}
 
         recyclerView.setAdapter(categoriesAdapter);
         recyclerView.setLayoutManager(layoutManager);

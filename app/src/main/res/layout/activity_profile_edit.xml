@@ -37,6 +37,7 @@
         android:layout_centerHorizontal="true" />
 
     <TextView
+        android:id="@+id/fullname"
         android:layout_marginTop="5dp"
         android:textColor="@android:color/white"
         android:padding="5dp"
@@ -56,7 +57,9 @@
         android:layout_below="@+id/topRelayout"
         android:layout_alignParentStart="true">
         <RelativeLayout
-            android:padding="20dp"
+            android:paddingTop="10dp"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -67,32 +70,38 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
-                android:layout_marginTop="9dp"
+                android:layout_marginTop="1dp"
                 android:padding="10dp"
                 android:text="Personal Information"
                 android:textAlignment="center"
                 android:textStyle="bold" />
             <EditText
+                android:drawableStart="@drawable/map_marker_radius"
+                android:drawablePadding="10dp"
                 android:id="@+id/surnameEdt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/personalTXT"
                 android:layout_centerHorizontal="true"
                 android:ems="10"
-                android:hint="Surname"
+                android:hint="Location Description"
                 android:inputType="text" />
 
-            <EditText
+            <ImageButton
+                android:src="@drawable/location_pin"
+                android:scaleType="centerInside"
                 android:layout_marginTop="5dp"
                 android:layout_below="@+id/surnameEdt"
                 android:id="@+id/firstEdt"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="80dp"
                 android:layout_centerHorizontal="true"
                 android:ems="10"
                 android:hint="First Name"
                 android:inputType="text" />
             <EditText
+                android:drawablePadding="10dp"
+                android:drawableStart="@drawable/email_open"
                 android:layout_marginTop="5dp"
                 android:layout_below="@+id/firstEdt"
                 android:id="@+id/emailedt"
@@ -104,6 +113,8 @@
                 android:inputType="textEmailAddress" />
 
             <EditText
+                android:drawableStart="@drawable/phone"
+                android:drawablePadding="10dp"
                 android:layout_marginTop="5dp"
                 android:id="@+id/phoneEdt"
                 android:layout_width="match_parent"

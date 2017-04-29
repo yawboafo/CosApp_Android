@@ -15,6 +15,50 @@
       },
       "oauth_client": [
         {
+          "client_id": "200759708996-cqjmjir63apqs67ge3ukivm239naop60.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ecoach.cosapp",
+            "certificate_hash": "e49ecfb1416c1c202a23c09c6b9d174f300d6d7b"
+          }
+        },
+        {
+          "client_id": "200759708996-4p4bpi5ensmdca621h5f7rmft51qqo8u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAM_Nn9YuDPG4ENMFRbbMd0C8Vf84Ab0uU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "200759708996-4p4bpi5ensmdca621h5f7rmft51qqo8u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:200759708996:android:48e6eb809f1794a5",
+        "android_client_info": {
+          "package_name": "com.app.appp"
+        }
+      },
+      "oauth_client": [
+        {
           "client_id": "200759708996-4p4bpi5ensmdca621h5f7rmft51qqo8u.apps.googleusercontent.com",
           "client_type": 3
         }

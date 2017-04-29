@@ -2,6 +2,9 @@ package com.ecoach.cosapp.Activites.Company;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,6 +13,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.activeandroid.ActiveAndroid;
@@ -30,6 +34,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.ecoach.cosapp.Application.Application;
 import com.ecoach.cosapp.DataBase.GalleryStorage;
 import com.ecoach.cosapp.DataBase.VerifiedCompanies;
+import com.ecoach.cosapp.Fragments.SelectDepartmentDialog;
 import com.ecoach.cosapp.Http.APIRequest;
 import com.ecoach.cosapp.Http.VolleySingleton;
 import com.ecoach.cosapp.R;
@@ -45,7 +50,7 @@ import java.util.List;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
-public class CompaniesActivity extends AppCompatActivity {
+public class CompaniesActivity extends AppCompatActivity implements SelectDepartmentDialog.SelectDepartmentDialogOnFragmentInteractionListener {
 
     RecyclerView recyclerView;
     private VolleySingleton volleySingleton;
@@ -314,7 +319,19 @@ public class CompaniesActivity extends AppCompatActivity {
         return true;
     }
 
+    void showDialog(DialogFragment dialogFragment, String tag) {
 
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Fragment prev = getSupportFragmentManager().findFragmentByTag(tag);
+        if (prev != null) {
+
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        dialogFragment.show(ft, tag);
+    }
 
     private void SetupRecycleview(  List<VerifiedCompanies> companiesArrayList){
 
@@ -341,6 +358,18 @@ public class CompaniesActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(CompaniesActivity.this,CompanyDetails.class);
                 startActivity(intent);
+
+
+                ImageButton chatbutton = (ImageButton)view.findViewById(R.id.chatbutton);
+                chatbutton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+
+                         SelectDepartmentDialog addRepsDialog=new SelectDepartmentDialog().newInstance("","");
+                        showDialog(addRepsDialog,"checkout");
+                    }
+                });
 
             }
 
@@ -413,6 +442,8 @@ Log.d("CatDetails",obj.getString("companyCuid") + " cate ID" + Application.getSe
                 //companyStatus
                 String active = obj.getString("companyStatus");
                 companies.setCompanyStatus(active);
+
+                companies.setIsRepOnline("false");
 
 
                 String company_rating = obj.getString("companyRating");
@@ -615,6 +646,8 @@ Log.d("CatDetails",obj.getString("companyCuid") + " cate ID" + Application.getSe
                 String active = obj.getString("companyStatus");
                 companies.setCompanyStatus(active);
 
+                companies.setIsRepOnline("false");
+
 
                 String company_rating = obj.getString("companyRating");
                 companies.setCompanyRating(company_rating);
@@ -749,6 +782,12 @@ Log.d("CatDetails",obj.getString("companyCuid") + " cate ID" + Application.getSe
 
 
     }
+
+    @Override
+    public void SelectDepartmentDialogonFragmentInteraction(String selectedDepartment, boolean isPersonalAccount, String selectedCompanyID, String selectedCompanyName) {
+
+    }
+
     static class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
         private GestureDetector gestureDetector;
         private  ClickListener clickListener;

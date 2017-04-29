@@ -1,4 +1,4 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -6,4 +6,16 @@
 
     <!-- TODO: Update blank fragment layout -->
 
-</FrameLayout>
+    <TextView
+
+        android:padding="10dp"
+        android:id="@+id/textView11"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="97dp"
+        android:text="You need to log In"
+        android:textAlignment="center"
+        android:textStyle="bold" />
+</RelativeLayout>

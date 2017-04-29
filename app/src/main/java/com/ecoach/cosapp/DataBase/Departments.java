@@ -23,8 +23,8 @@ public class Departments extends Model {
     @Column(name = "company_id")
     private String company_id;
 
-    @Column(name = "departmentname")
-    private String departmentname;
+    @Column(name = "department")
+    private String department;
 
 
     public String getDepartmentid() {
@@ -36,11 +36,11 @@ public class Departments extends Model {
     }
 
     public String getDepartmentname() {
-        return departmentname;
+        return department;
     }
 
     public void setDepartmentname(String departmentname) {
-        this.departmentname = departmentname;
+        this.department = departmentname;
     }
 
 
@@ -55,19 +55,19 @@ public class Departments extends Model {
     public static Departments getDepartmentsByIDByName(String name) {
         return new Select()
                 .from(Departments.class)
-                .where("departmentname = ?",name)
+                .where("department = ?",name)
                 .executeSingle();
     }
 
     public static Departments getDepartmentsByIDByName(String name,String company_id) {
         return new Select()
                 .from(Departments.class)
-                .where("departmentname = ?",name).and("company_id = ?",company_id)
+                .where("department = ?",name).and("company_id = ?",company_id)
                 .executeSingle();
     }
 
     public static List<Departments> getDepartmentsByCompanyID(String company_id) {
-        return new Select()
+        return new Select().distinct()
                 .from(Departments.class)
                 .where("company_id = ?",company_id)
                 .execute();
@@ -80,7 +80,7 @@ public class Departments extends Model {
                 .executeSingle();
     }
     public static List<Departments> getAllDepartments() {
-        return new Select()
+        return new Select().distinct()
                 .from(Departments.class)
                 .execute();
     }

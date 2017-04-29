@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,14 +14,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.android.volley.AuthFailureError;
@@ -38,9 +35,6 @@ import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.ecoach.cosapp.Activites.MainActivity;
-import com.ecoach.cosapp.Activites.SearchActivity;
-import com.ecoach.cosapp.Activites.UserAccounts.CreateAccount;
 import com.ecoach.cosapp.Application.Application;
 import com.ecoach.cosapp.DataBase.AppInstanceSettings;
 import com.ecoach.cosapp.DataBase.Categories;
@@ -57,7 +51,6 @@ import com.vansuita.pickimage.bean.PickResult;
 import com.vansuita.pickimage.bundle.PickSetup;
 import com.vansuita.pickimage.dialog.PickImageDialog;
 import com.vansuita.pickimage.listeners.IPickResult;
-import com.vansuita.pickimage.util.Util;
 
 import org.json.JSONObject;
 
@@ -165,7 +158,7 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
         businesscoverLogo= (ImageView)findViewById(R.id.businesscoverLogo);
         companyLogo = (CircleImageView)findViewById(R.id.imageButton2);
         pinBusinesslocation = (ImageView)findViewById(R.id.imageButton3);
-        uploadCert=(FButton)findViewById(R.id.button2);
+        uploadCert=(FButton)findViewById(R.id.submitRatingButton);
         chatBackground=(ImageView)findViewById(R.id.imageView5) ;
 
         use_email.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
