@@ -44,7 +44,9 @@ public class ResetPassword extends AppCompatActivity {
             public void onClick(View v) {
 
                 nextButton.getText().equals("Next");{
-                    validateFields();
+
+                    viewFlipper.showNext();
+                   // validateFields();
                 }
             }
         });

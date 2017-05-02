@@ -73,6 +73,9 @@ public class ProfileEditActivity extends AppCompatActivity implements IPickResul
     User user = null;
     private VolleySingleton volleySingleton;
     private RequestQueue requestQueue;
+
+    FButton updatePassword;
+    EditText OldpasswordEdt; EditText NewpasswordEdt;  EditText ConfpasswordEdt;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,6 +131,28 @@ public class ProfileEditActivity extends AppCompatActivity implements IPickResul
                 PickImageDialog.build(new PickSetup()).show(ProfileEditActivity.this);
             }
         });
+
+         OldpasswordEdt =(EditText)findViewById(R.id.passwordEdt);
+         NewpasswordEdt =(EditText)findViewById(R.id.passwordEdt2);
+         ConfpasswordEdt =(EditText)findViewById(R.id.passwordEdt2confirm);
+
+        updatePassword=(FButton)findViewById(R.id.updatePassword);
+        updatePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                if(OldpasswordEdt.getText().toString().isEmpty() == false &&
+                        NewpasswordEdt.getText().toString().isEmpty() == false &&
+                        ConfpasswordEdt.getText().toString().isEmpty() ==false){
+
+
+                    upDateNewPasswordVolley();
+                }
+
+            }
+        });
+
         editTextViews();
 
     }
@@ -286,6 +311,158 @@ public class ProfileEditActivity extends AppCompatActivity implements IPickResul
 
 
                                                 }
+                                            }
+                                        })
+                                        .show();
+
+
+
+
+
+                            }
+
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
+                        //  Message.messageShort(MyApplication.getAppContext(),""+tokenValue+"\n"+response.toString()+"\n"+booleaner);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                pDialog.dismiss();
+                new SweetAlertDialog(ProfileEditActivity.this, SweetAlertDialog.ERROR_TYPE)
+                        .setTitleText("Oops...")
+                        .setContentText("Something went wrong!")
+                        .show();
+
+
+                //  dialogs.SimpleWarningAlertDialog("Transmission Error", "Connection Failed").show();
+                Log.d("volley.Response", error.toString());
+
+
+                if (error instanceof TimeoutError) {
+                    // dialogs.SimpleWarningAlertDialog("Network Slacking", "Time Out Error").show();
+                    Log.d("volley", "NoConnectionError.....TimeoutError..");
+
+
+                    //     dialogs.SimpleWarningAlertDialog("Network Slacking", "Time Out Error");
+
+
+                } else if (error instanceof NoConnectionError) {
+
+                    // dialogs.SimpleWarningAlertDialog("No Internet Connections Detected", "No Internet Connection").show();
+
+                } else if (error instanceof AuthFailureError) {
+                    //  Log.d("volley", "AuthFailureError..");
+                    // dialogs.SimpleWarningAlertDialog("Authentication Failure","AuthFailureError").show();
+
+
+                } else if (error instanceof ServerError) {
+                    // dialogs.SimpleWarningAlertDialog("Server Malfunction", "Server Error").show();
+
+                } else if (error instanceof NetworkError) {
+                    // dialogs.SimpleWarningAlertDialog("Network Error", "Network Error").show();
+
+                } else if (error instanceof ParseError) {
+                    // dialogs.SimpleWarningAlertDialog("Parse Error","Parse Error").show();
+                }
+
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                headers.put("auth-key", user.getUserkey());
+                return headers;
+            }
+        };
+        int socketTimeout = 480000000;//8 minutes - change to what you want
+        RetryPolicy policy = new DefaultRetryPolicy(
+                socketTimeout,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        request.setRetryPolicy(policy);
+        requestQueue.add(request);
+        Log.d("oxinbo", "Server Logs" + params.toString());
+    }
+    private void upDateNewPasswordVolley() {
+
+        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        pDialog.setTitleText("Updating  ..");
+        pDialog.setCancelable(false);
+        pDialog.show();
+
+
+        final HashMap<String, String> params = new HashMap<String, String>();
+/**
+ *
+ * is_pass_change
+ email
+ temp_pass
+ pass_1
+ pass_2
+ *
+ *
+ */
+
+
+        params.put("is_pass_change", "" + "1");
+        params.put("email", User.getUserByKey(Application.AppUserKey).getEmail());
+        params.put("temp_pass", OldpasswordEdt.getText().toString());
+        params.put("pass_1",NewpasswordEdt.getText().toString());
+        params.put("pass_2",ConfpasswordEdt.getText().toString());
+
+        Log.d("loginD", params.toString());
+
+
+        volleySingleton = VolleySingleton.getsInstance();
+        requestQueue = VolleySingleton.getRequestQueue();
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,
+                APIRequest.BASE_URL,
+                new JSONObject(params),
+                new Response.Listener<JSONObject>() {
+                    //Log.d("Params",params+"");
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        pDialog.dismiss();
+                        try {
+                            Log.d("logs", response.toString());
+
+
+                            Log.d("logs", response.toString());
+
+
+                            JSONObject object = response.optJSONObject("ecoachlabs");
+                            String statuscode = object.getString("status");
+                            String message = object.getString("msg");
+
+                            if (!statuscode.equals("201")) {
+
+                                new SweetAlertDialog(ProfileEditActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                        .setTitleText("Sorry,Try Again")
+                                        .setContentText(message)
+                                        .show();
+
+                            } else if (statuscode.equals("201")) {
+
+                                try{persistUserData(object);}catch (Exception e){e.printStackTrace();}
+
+                                new SweetAlertDialog(ProfileEditActivity.this, SweetAlertDialog.SUCCESS_TYPE)
+                                        .setTitleText("Completed")
+                                        .setContentText(message)
+                                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                            @Override
+                                            public void onClick(SweetAlertDialog sweetAlertDialog) {
+
+                                                sweetAlertDialog.dismiss();
+
+
                                             }
                                         })
                                         .show();
