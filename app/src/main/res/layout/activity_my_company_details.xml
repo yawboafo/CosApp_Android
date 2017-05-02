@@ -114,4 +114,15 @@
         </LinearLayout>
     </TabHost>
 
+    <android.support.design.widget.FloatingActionButton
+        android:background="@color/colorPrimary"
+        android:id="@+id/editFloating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/fab_margin"
+        app:srcCompat="@drawable/edit_company"
+        android:layout_gravity="bottom|end"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"/>
+
 </RelativeLayout>

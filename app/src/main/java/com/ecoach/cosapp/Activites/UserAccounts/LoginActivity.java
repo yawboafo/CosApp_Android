@@ -1,6 +1,7 @@
 package com.ecoach.cosapp.Activites.UserAccounts;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -25,6 +26,14 @@ import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.applozic.audiovideo.activity.AudioCallActivityV2;
+import com.applozic.audiovideo.activity.VideoActivity;
+import com.applozic.mobicomkit.Applozic;
+import com.applozic.mobicomkit.ApplozicClient;
+import com.applozic.mobicomkit.api.account.register.RegistrationResponse;
+import com.applozic.mobicomkit.api.account.user.PushNotificationTask;
+import com.applozic.mobicomkit.api.account.user.UserLoginTask;
+import com.applozic.mobicomkit.uiwidgets.ApplozicSetting;
 import com.ecoach.cosapp.Activites.MainActivity;
 import com.ecoach.cosapp.DataBase.AppInstanceSettings;
 import com.ecoach.cosapp.DataBase.User;
@@ -44,7 +53,10 @@ import com.jakewharton.processphoenix.ProcessPhoenix;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import info.hoang8f.widget.FButton;
@@ -446,4 +458,6 @@ public class LoginActivity extends AppCompatActivity {
         });
 
     }
+
+
 }

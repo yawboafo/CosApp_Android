@@ -40,6 +40,16 @@ import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.applozic.audiovideo.activity.AudioCallActivityV2;
+import com.applozic.audiovideo.activity.VideoActivity;
+import com.applozic.mobicomkit.Applozic;
+import com.applozic.mobicomkit.ApplozicClient;
+import com.applozic.mobicomkit.api.account.register.RegistrationResponse;
+import com.applozic.mobicomkit.api.account.user.PushNotificationTask;
+import com.applozic.mobicomkit.api.account.user.UserLoginTask;
+import com.applozic.mobicomkit.api.account.user.UserLogoutTask;
+import com.applozic.mobicomkit.uiwidgets.ApplozicSetting;
+import com.ecoach.cosapp.Activites.IncomingChat;
 import com.ecoach.cosapp.Activites.SearchActivity;
 import com.ecoach.cosapp.Activites.UserAccounts.CreateAccount;
 import com.ecoach.cosapp.Application.Application;
@@ -50,6 +60,7 @@ import com.ecoach.cosapp.DataBase.RepAvailablity;
 import com.ecoach.cosapp.DataBase.VerifiedCompanies;
 import com.ecoach.cosapp.Http.APIRequest;
 import com.ecoach.cosapp.Http.VolleySingleton;
+import com.ecoach.cosapp.Models.IncomingChatModel;
 import com.ecoach.cosapp.R;
 import com.ecoach.cosapp.RecycleAdapters.MyCompaniesAdapter;
 
@@ -258,6 +269,10 @@ public class ManangeMyCompanies extends AppCompatActivity implements  Addcompany
                                         repAvailablity.save();
                                         switcher.setText("Online");
                                         switcher.setTextColor(ManangeMyCompanies.this.getResources().getColor(R.color.colorGreen));
+
+                                        ApplozicUserLogin(VerifiedCompanies.getCompanyByID(companyID),switcher);
+
+
 
                                     } else {
 
@@ -939,5 +954,94 @@ public class ManangeMyCompanies extends AppCompatActivity implements  Addcompany
 
     }
 
+    private void ApplozicUserLogin(final VerifiedCompanies verifiedCompanies,
+                                   final CompoundButton switcher){
 
+        final SweetAlertDialog pDialog;
+        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        pDialog.setTitleText("Switching Account ..");
+        //pDialog.setContentText("Logging you into " + incoming.getCompany_name()+ " account ");
+        pDialog.setCancelable(false);
+        pDialog.show();
+
+
+        UserLogoutTask.TaskListener userLogoutTaskListener = new UserLogoutTask.TaskListener() {
+            @Override
+            public void onSuccess(Context context) {
+                //Logout success
+                UserLoginTask.TaskListener listener = new UserLoginTask.TaskListener() {
+                    @Override
+                    public void onSuccess(RegistrationResponse registrationResponse, Context context) {
+
+                        ApplozicClient.getInstance(context).enableNotification();
+                        //ApplozicClient.getInstance(context).hideChatListOnNotification();
+                        ApplozicClient.getInstance(context).setContextBasedChat(false);
+
+
+                        Log.d("aPPLOZIC Succes",registrationResponse.toString());
+                        ApplozicClient.getInstance(context).setHandleDial(true).setIPCallEnabled(true);
+                        Map<ApplozicSetting.RequestCode, String> activityCallbacks = new HashMap<ApplozicSetting.RequestCode, String>();
+                        activityCallbacks.put(ApplozicSetting.RequestCode.AUDIO_CALL, AudioCallActivityV2.class.getName());
+                        activityCallbacks.put(ApplozicSetting.RequestCode.VIDEO_CALL, VideoActivity.class.getName());
+                        ApplozicSetting.getInstance(context).setActivityCallbacks(activityCallbacks);
+
+
+                        PushNotificationTask.TaskListener pushNotificationTaskListener=  new PushNotificationTask.TaskListener() {
+                            @Override
+                            public void onSuccess(RegistrationResponse registrationResponse) {
+                                pDialog.dismiss();
+                                Log.d("ApplozicSuccess",registrationResponse.getMessage().toString());
+
+                                switcher.setText("Online");
+                                switcher.setTextColor(ManangeMyCompanies.this.getResources().getColor(R.color.colorGreen));
+                            }
+
+                            @Override
+                            public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
+                                Log.d("ApplozicFailed",registrationResponse.getMessage().toString());
+                                pDialog.dismiss();
+
+                            }
+                        };
+                        PushNotificationTask pushNotificationTask = new PushNotificationTask(Applozic.getInstance(context).getDeviceRegistrationId(),pushNotificationTaskListener,context);
+                        pushNotificationTask.execute((Void)null);
+                    }
+
+                    @Override
+                    public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
+                        // Log.d("aPPLOZIC Failed",registrationResponse.toString());
+                    }
+                };
+
+
+                com.applozic.mobicomkit.api.account.user.User applozicUser = new com.applozic.mobicomkit.api.account.user.User();
+                applozicUser.setUserId(verifiedCompanies.getCompanyCuid()+Application.AppUserKey);
+
+                applozicUser.setDisplayName(verifiedCompanies.getCompanyName());
+                applozicUser.setEmail(verifiedCompanies.getEmail());
+                applozicUser.setContactNumber(verifiedCompanies.getPhone1());
+                List<String> featureList =  new ArrayList<>();
+                featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_AUDIO_CALL.getValue());// FOR AUDIO
+                featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_VIDEO_CALL.getValue());// FOR VIDEO
+                applozicUser.setFeatures(featureList);
+
+                applozicUser.setAuthenticationTypeId(com.applozic.mobicomkit.api.account.user.User.AuthenticationType.APPLOZIC.getValue());
+                new UserLoginTask(applozicUser, listener, ManangeMyCompanies.this).execute((Void) null);
+            }
+            @Override
+            public void onFailure(Exception exception) {
+                //Logout failure
+            }
+        };
+
+        UserLogoutTask userLogoutTask = new UserLogoutTask(userLogoutTaskListener, ManangeMyCompanies.this);
+        userLogoutTask.execute((Void) null);
+
+
+
+
+
+
+    }
 }

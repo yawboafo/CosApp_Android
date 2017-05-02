@@ -69,15 +69,15 @@ public class RepDetails extends AppCompatActivity {
 
         try{
 
-            if(RepsReview.getRepInvite(Application.activeRepInvites.getEmail(),Application.AppUserKey) == null){
+          //  if(RepsReview.getRepInvite(Application.activeRepInvites.getEmail(),Application.AppUserKey) == null){
 
                 getrepDetails();
+//
+           // }else{
 
-            }else{
-
-                setRepInformation(RepsReview.getRepInvite(Application.activeRepInvites.getEmail(),Application.AppUserKey));
-
-            }
+               // setRepInformation(RepsReview.getRepInvite(Application.activeRepInvites.getEmail(),Application.AppUserKey));
+//
+          //  }
 
         }catch (Exception e){
 
@@ -176,7 +176,7 @@ e.printStackTrace();
                     //Log.d("Params",params+"");
                     @Override
                     public void onResponse(JSONObject response) {
-pDialog.dismiss();
+                      pDialog.dismiss();
 
                         try {
 
@@ -199,6 +199,12 @@ pDialog.dismiss();
                                     new SweetAlertDialog(RepDetails.this, SweetAlertDialog.ERROR_TYPE)
                                             .setTitleText("Sorry")
                                             .setContentText(message)
+                                            .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                                @Override
+                                                public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                                    onBackPressed();
+                                                }
+                                            })
                                             .show();
 
 
@@ -247,6 +253,7 @@ pDialog.dismiss();
 
 
                 if (error instanceof TimeoutError) {
+                    pDialog.dismiss();
                     // dialogs.SimpleWarningAlertDialog("Network Slacking", "Time Out Error").show();
                     Log.d("volley", "NoConnectionError.....TimeoutError..");
 
@@ -287,12 +294,7 @@ pDialog.dismiss();
                 return headers;
             }
         };
-        int socketTimeout = 480000000;//8 minutes - change to what you want
-        RetryPolicy policy = new DefaultRetryPolicy(
-                socketTimeout,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
-        request.setRetryPolicy(policy);
+
         requestQueue.add(request);
         Log.d("oxinbo","Server Logs"+params.toString());
     }

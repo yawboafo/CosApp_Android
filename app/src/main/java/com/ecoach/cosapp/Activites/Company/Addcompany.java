@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.android.volley.AuthFailureError;
@@ -47,6 +50,9 @@ import com.ecoach.cosapp.Utilities.GPSTracker;
 import com.ecoach.cosapp.Utilities.Utility;
 import com.ecoach.cosapp.Utilities.ViewUtils;
 import com.flask.colorpicker.ColorPickerView;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.vansuita.pickimage.bean.PickResult;
 import com.vansuita.pickimage.bundle.PickSetup;
 import com.vansuita.pickimage.dialog.PickImageDialog;
@@ -63,22 +69,24 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 import de.hdodenhof.circleimageview.CircleImageView;
 import info.hoang8f.widget.FButton;
 
-public class Addcompany extends AppCompatActivity implements IPickResult {
+public class Addcompany extends AppCompatActivity implements
+        IPickResult,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
 
-
-    ImageView pinBusinesslocation,businesscoverLogo,chatBackground;
+    ImageView pinBusinesslocation, businesscoverLogo, chatBackground;
     CircleImageView companyLogo;
     LocationManager mLocationManager;
     GPSTracker gpsTracker;
     ViewFlipper viewFlipper;
-    FButton nextButton,backButton,uploadCert;
+    FButton nextButton, backButton, uploadCert;
     ColorPickerView color_picker_view;
     private VolleySingleton volleySingleton;
     private RequestQueue requestQueue;
-    String email,category,use_my_email;
+    String email, category, use_my_email;
     Switch use_email;
-    EditText companyName,company_email,company_phone1,company_phone2,company_URL,company_address,company_bio;
+    EditText companyName, company_email, company_phone1, company_phone2, company_URL, company_address, company_bio;
     Spinner Category;
     User user;
     TextView certLabel;
@@ -86,13 +94,16 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
     String company_lat = "0.0";
     String company_long = "0.0";
     private onBackerPressed mListener;
+    GoogleApiClient mGoogleApiClient;
+    Location mLastLocation;
 
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_addcompany);
 
-        if (getSupportActionBar() != null){
+        if (getSupportActionBar() != null) {
 
             getSupportActionBar().setTitle("Add Company");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -107,36 +118,46 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
 
 
         try {
-            user = User.getUserByKey(AppInstanceSettings.load(AppInstanceSettings.class,1).getUserkey());
+            user = User.getUserByKey(AppInstanceSettings.load(AppInstanceSettings.class, 1).getUserkey());
 
-        }catch (Exception e){
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+
+        try {
+
+            mListener = (onBackerPressed) Addcompany.this;
+        } catch (Exception e) {
+
 
             e.printStackTrace();
         }
 
 
 
+
         try{
 
-            mListener = (onBackerPressed) Addcompany.this;
+          //  setLastKnownlocation();
+            //getLastKnownlocation();
         }catch (Exception e){
 
-
-            e.printStackTrace();
+e.printStackTrace();
         }
     }
 
     private void initViews() {
 
 
-
-        viewFlipper=(ViewFlipper)findViewById(R.id.viewFlipper);
-        color_picker_view=(ColorPickerView)findViewById(R.id.color_picker_view);
-       // color_picker_view.setO;
+        viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper);
+        color_picker_view = (ColorPickerView) findViewById(R.id.color_picker_view);
+        // color_picker_view.setO;
 
         companyName = (EditText) findViewById(R.id.companyname);
-        certLabel = (TextView)findViewById(R.id.certLabel);
-        Category = (Spinner)findViewById(R.id.companyCategory);
+        certLabel = (TextView) findViewById(R.id.certLabel);
+        Category = (Spinner) findViewById(R.id.companyCategory);
         Category.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -148,27 +169,27 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
 
             }
         });
-        company_email=(EditText)findViewById(R.id.companyemail);
-        company_phone1=(EditText)findViewById(R.id.phone1);
-        company_phone2=(EditText)findViewById(R.id.phone2);
-        company_URL=(EditText)findViewById(R.id.website);
-        company_address=(EditText)findViewById(R.id.address);
-        company_bio=(EditText)findViewById(R.id.companyBio);
-        use_email = (Switch)findViewById(R.id.useEmailSwitch);
-        businesscoverLogo= (ImageView)findViewById(R.id.businesscoverLogo);
-        companyLogo = (CircleImageView)findViewById(R.id.imageButton2);
-        pinBusinesslocation = (ImageView)findViewById(R.id.imageButton3);
-        uploadCert=(FButton)findViewById(R.id.button2);
-        chatBackground=(ImageView)findViewById(R.id.imageView5) ;
+        company_email = (EditText) findViewById(R.id.companyemail);
+        company_phone1 = (EditText) findViewById(R.id.phone1);
+        company_phone2 = (EditText) findViewById(R.id.phone2);
+        company_URL = (EditText) findViewById(R.id.website);
+        company_address = (EditText) findViewById(R.id.address);
+        company_bio = (EditText) findViewById(R.id.companyBio);
+        use_email = (Switch) findViewById(R.id.useEmailSwitch);
+        businesscoverLogo = (ImageView) findViewById(R.id.businesscoverLogo);
+        companyLogo = (CircleImageView) findViewById(R.id.imageButton2);
+        pinBusinesslocation = (ImageView) findViewById(R.id.imageButton3);
+        uploadCert = (FButton) findViewById(R.id.button2);
+        chatBackground = (ImageView) findViewById(R.id.imageView5);
 
         use_email.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
 
-                if(isChecked){
+                if (isChecked) {
                     company_email.setText(user.getEmail());
-                }else{
+                } else {
 
                     company_email.setText("");
                 }
@@ -180,17 +201,20 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
             public void onClick(View v) {
 
 
-                if(!gpsTracker.canGetLocation()){
+                if (!gpsTracker.canGetLocation()) {
 
 
                     gpsTracker.showSettingsAlert();
-                }else if(gpsTracker.getLocation() == null){
+                } else if (gpsTracker.getLocation() == null) {
+                    company_lat = String.valueOf(gpsTracker.getLatitude());
+                    company_long = String.valueOf(gpsTracker.getLongitude());
+                    pinBusinesslocation.setImageResource(R.drawable.mapshot);
+                    // mLocationManager.getLastKnownLocation()
 
+                    // ViewUtils.multipleDialog(Addcompany.this,"Could not get your location","Try moving around for a few minutes");
+                } else {
 
-                    ViewUtils.multipleDialog(Addcompany.this,"Could not get your location","Try moving around for a few minutes");
-                }else {
-
-                    company_lat = String.valueOf(gpsTracker.getLatitude()) ;
+                    company_lat = String.valueOf(gpsTracker.getLatitude());
                     company_long = String.valueOf(gpsTracker.getLongitude());
                     pinBusinesslocation.setImageResource(R.drawable.mapshot);
                 }
@@ -233,26 +257,26 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
             }
         });
 
-        User user = User.load(User.class,1);
-        Log.d("User key ",user.getUserkey());
+        User user = User.load(User.class, 1);
+        Log.d("User key ", user.getUserkey());
 
     }
 
 
-    void setSpinnerValues(){
+    void setSpinnerValues() {
 
         List<String> spinnerValues = new ArrayList<>();
 
-        for(Categories  categories: Categories.getAllCategories()){
+        for (Categories categories : Categories.getAllCategories()) {
 
-            spinnerValues.add( categories.getCategoryNames());
+            spinnerValues.add(categories.getCategoryNames());
         }
 
 
         String[] wee = spinnerValues.toArray(new String[spinnerValues.size()]);
 
         ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, wee);
-        spinnerArrayAdapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item );
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
 // Spinner spinYear = (Spinner)findViewById(R.id.spin);
         Category.setAdapter(spinnerArrayAdapter);
@@ -266,17 +290,16 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
     }
 
 
-
     private void setactionButtons() {
 
         // setIndicatorsInit();
 
 
-        viewFlipper=(ViewFlipper)findViewById(R.id.viewFlipper);
+        viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper);
 
         //indicator1.setBackgroundColor(CreateAccount.this.getResources().getColor(R.color.colorPrimary));
-        nextButton=(FButton)findViewById(R.id.nextButton);
-        backButton=(FButton)findViewById(R.id.backButton);
+        nextButton = (FButton) findViewById(R.id.nextButton);
+        backButton = (FButton) findViewById(R.id.backButton);
         backButton.setVisibility(View.INVISIBLE);
 
         nextButton.setOnClickListener(new View.OnClickListener() {
@@ -284,7 +307,7 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
             public void onClick(View v) {
 
 
-                if(nextButton.getText().toString().equals("Add Company")){
+                if (nextButton.getText().toString().equals("Add Company")) {
 
                     validateFields();
 
@@ -292,17 +315,16 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
                 }
 
 
-                if(viewFlipper.getDisplayedChild() == 1){
+                if (viewFlipper.getDisplayedChild() == 1) {
 
                     nextButton.setText("Add Company");
 
 
-
                 }
-                if(viewFlipper.getDisplayedChild() == 2){
+                if (viewFlipper.getDisplayedChild() == 2) {
 
 
-                }else {
+                } else {
                     backButton.setVisibility(View.VISIBLE);
                     viewFlipper.showNext();
                 }
@@ -311,21 +333,19 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
         });
 
 
-
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
 
-
-                if(viewFlipper.getDisplayedChild() == 1){
+                if (viewFlipper.getDisplayedChild() == 1) {
 
                     backButton.setVisibility(View.INVISIBLE);
                 }
-                if(viewFlipper.getDisplayedChild() == 0){
+                if (viewFlipper.getDisplayedChild() == 0) {
                     //backButton.setVisibility(View.INVISIBLE);
 
-                }else {
+                } else {
                     nextButton.setText("Next");
                     viewFlipper.showPrevious();
                 }
@@ -334,10 +354,46 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
 
     }
 
+    void getLastKnownlocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+    if (mLastLocation != null) {
 
+        Toast.makeText(Addcompany.this,""+mLastLocation.getLatitude() + mLastLocation.getLongitude(),Toast.LENGTH_SHORT).show();
 
+    }
 
+}
 
+    void setLastKnownlocation(){
+    if (mGoogleApiClient == null) {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+}
+
+    protected void onStart() {
+      //  mGoogleApiClient.connect();
+        super.onStart();
+    }
+
+    protected void onStop() {
+        //mGoogleApiClient.disconnect();
+        super.onStop();
+    }
 
     private void setmLocationListener(){
 
@@ -641,7 +697,22 @@ public class Addcompany extends AppCompatActivity implements IPickResult {
 
     }
 
-    public interface onBackerPressed {
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+public interface onBackerPressed {
         // TODO: Update argument type and name
         void onBackerPressed();
     }

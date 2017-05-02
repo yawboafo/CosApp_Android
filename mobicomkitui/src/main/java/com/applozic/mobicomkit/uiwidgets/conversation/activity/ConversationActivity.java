@@ -196,7 +196,7 @@ public class ConversationActivity extends AppCompatActivity implements
     String repID = "";
     String customerID = "";
 
-
+    String TopicDetails = "";
     private VolleySingleton volleySingleton;
     private RequestQueue requestQueue;
 
@@ -294,14 +294,14 @@ public class ConversationActivity extends AppCompatActivity implements
 
         Log.d("conversationid","OnresumeconversationID"+BroadcastService.staticconversationID+"");
         try {
-          //
-            // getConversationDetailsToFile();
 
-            conversationTopicDetails = ConversationDatabaseService.getInstance(ConversationActivity.this).getConversationByConversationId(BroadcastService.staticconversationID);
-            String TopicDetails = conversationTopicDetails.getTopicDetail();
 
-            Log.d("TopicDetails",TopicDetails);
+            conversationTopicDetails = ConversationDatabaseService.getInstance(ConversationActivity.this)
+                    .getConversationByConversationId(BroadcastService.staticconversationID);
+            TopicDetails = conversationTopicDetails.getTopicDetail();
 
+            Log.d("TopicDetails","TopicDetails "+ TopicDetails);
+            Log.d("TopicDetails","conversationDetails "+ conversationTopicDetails.getSenderUserName());
 
         }catch (Exception e){
 
@@ -459,27 +459,26 @@ public class ConversationActivity extends AppCompatActivity implements
             return true;
         }**/
 
+      Log.d("Applozic","Conversation ID "+BroadcastService.staticconversationID.toString());
+        conversationTopicDetails = ConversationDatabaseService.getInstance(ConversationActivity.this)
+                .getConversationByConversationId(BroadcastService.staticconversationID);
+
+
+        Log.d("Applozic","Conversation TopicID "+conversationTopicDetails.getTopicId());
 
         try {
 
-            Log.d("isRated","is Conversation Rated "+ get4rmSharedPreference(BroadcastService.staticconversationID.toString()));
+           // Log.d("isRated","is Conversation Rated "+ get4rmSharedPreference(BroadcastService.staticconversationID.toString()));
 
         }catch (Exception e){
 
             e.printStackTrace();
         }
 
+
             try {
 
 
-                conversationTopicDetails = ConversationDatabaseService.getInstance(ConversationActivity.this).getConversationByConversationId(BroadcastService.staticconversationID);
-            }catch (Exception e){
-
-                e.printStackTrace();
-            }
-            try {
-
-                String TopicDetails = conversationTopicDetails.getTopicDetail();
 
                 JSONObject jObject  = new JSONObject(TopicDetails);
                 repID = jObject.getString("key1");
@@ -541,6 +540,12 @@ public class ConversationActivity extends AppCompatActivity implements
         setContentView(R.layout.quickconversion_activity);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+        myToolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(ConversationActivity.this,"I was clicked",Toast.LENGTH_SHORT).show();
+            }
+        });
         connectivityReceiver = new ConnectivityReceiver();
         geoApiKey = Utils.getMetaDataValue(getApplicationContext(), GOOGLE_API_KEY_META_DATA);
         activityToOpenOnClickOfCallButton = Utils.getMetaDataValue(getApplicationContext(), ACTIVITY_TO_OPEN_ONCLICK_OF_CALL_BUTTON_META_DATA);
@@ -573,7 +578,7 @@ public class ConversationActivity extends AppCompatActivity implements
             currentConversationId = savedInstanceState.getInt(CONVERSATION_ID);
 
 
-            Log.d("conversationid","conversationID"+BroadcastService.staticconversationID+"");
+            Log.d("conversationid","OnCreateconversationID"+BroadcastService.staticconversationID+"");
 
             if(contact != null || channel != null ){
                 if (channel != null) {
@@ -626,7 +631,20 @@ public class ConversationActivity extends AppCompatActivity implements
 
 
 
+        try {
+            //
+            // getConversationDetailsToFile();
 
+            conversationTopicDetails = ConversationDatabaseService.getInstance(ConversationActivity.this).getConversationByConversationId(BroadcastService.staticconversationID);
+            TopicDetails = conversationTopicDetails.getTopicDetail();
+
+            Log.d("TopicDetails",TopicDetails);
+
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+        }
 
     }
 
@@ -647,6 +665,21 @@ public class ConversationActivity extends AppCompatActivity implements
             }
             conversationUIService.checkForStartNewConversation(intent);
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            //
+            // getConversationDetailsToFile();
+
+            conversationTopicDetails = ConversationDatabaseService.getInstance(ConversationActivity.this).getConversationByConversationId(BroadcastService.staticconversationID);
+            TopicDetails = conversationTopicDetails.getTopicDetail();
+
+            Log.d("TopicDetails",TopicDetails);
+
+
+        }catch (Exception e){
+
             e.printStackTrace();
         }
     }
@@ -714,6 +747,21 @@ public class ConversationActivity extends AppCompatActivity implements
                 return;
             }
         }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            //
+            // getConversationDetailsToFile();
+
+            conversationTopicDetails = ConversationDatabaseService.getInstance(ConversationActivity.this).getConversationByConversationId(BroadcastService.staticconversationID);
+            TopicDetails = conversationTopicDetails.getTopicDetail();
+
+            Log.d("TopicDetails",TopicDetails);
+
+
+        }catch (Exception e){
+
             e.printStackTrace();
         }
 
@@ -975,17 +1023,10 @@ public class ConversationActivity extends AppCompatActivity implements
         RatingDialog addRepsDialog = new RatingDialog().newInstance("", "");
         showDialog(addRepsDialog, "checkout");
         **/
+
         try {
 
-
-            conversationTopicDetails = ConversationDatabaseService.getInstance(ConversationActivity.this).getConversationByConversationId(BroadcastService.staticconversationID);
-        }catch (Exception e){
-
-            e.printStackTrace();
-        }
-        try {
-
-            String TopicDetails = conversationTopicDetails.getTopicDetail();
+             TopicDetails = conversationTopicDetails.getTopicDetail();
 
             JSONObject jObject  = new JSONObject(TopicDetails);
             repID = jObject.getString("key1");

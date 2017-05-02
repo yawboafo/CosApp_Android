@@ -36,7 +36,10 @@ import com.applozic.mobicomkit.Applozic;
 import com.applozic.mobicomkit.ApplozicClient;
 import com.applozic.mobicomkit.api.account.register.RegistrationResponse;
 import com.applozic.mobicomkit.api.account.user.PushNotificationTask;
+import com.applozic.mobicomkit.api.account.user.UserClientService;
 import com.applozic.mobicomkit.api.account.user.UserLoginTask;
+import com.applozic.mobicomkit.api.account.user.UserLogoutTask;
+import com.applozic.mobicomkit.api.account.user.UserService;
 import com.applozic.mobicomkit.feed.TopicDetail;
 import com.applozic.mobicomkit.uiwidgets.ApplozicApplication;
 import com.applozic.mobicomkit.uiwidgets.ApplozicSetting;
@@ -62,6 +65,7 @@ import java.util.Map;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import info.hoang8f.widget.FButton;
 
+import static com.applozic.mobicomkit.broadcast.NotificationBroadcastReceiver.TAG;
 import static com.ecoach.cosapp.R.id.customerEmail;
 import static com.ecoach.cosapp.R.id.customerphone;
 import static com.ecoach.cosapp.R.id.itemDetails;
@@ -260,49 +264,12 @@ public class IncomingChat extends Activity {
                                 Log.d("chat_session","chat_session : "+chat_session);
 
 
-                                //persistUserData(object);
-                             /**   new SweetAlertDialog(IncomingChat.this, SweetAlertDialog.SUCCESS_TYPE)
-                                        .setTitleText("Success")
-                                        .setContentText(message)
-                                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-                                            @Override
-                                            public void onClick(SweetAlertDialog sweetAlertDialog) {
-                                                sweetAlertDialog.dismiss();
-                                                IncomingChat.this.finish();
-                                                ApplozicUserLogin(incoming);
-                                            }
-                                        })
-                                        .show();**/
+                                ApplozicUserLogin(incoming,chat_session);
 
-                               initiateOneOnOneChat(incoming,chat_session);
-
-                               // IncomingChat.this.finish();
-
-                            //    String tmpCustommerID = "942354x25434a413u2u2w223b4746413w243z2744444m5b44423d4f5947454b4"
-
-                           /**  Log.d("iincomCusID","INCOMING "+ incoming.getCustomer_encrypted_id());
-                                Intent intent = new Intent(IncomingChat.this, ConversationActivity.class);
-                                intent.putExtra(ConversationUIService.USER_ID,incoming.getCustomer_encrypted_id());
-                                intent.putExtra(ConversationUIService.DISPLAY_NAME, incoming.getCustomer_fname()+  "  "  + incoming.getCustomer_lname()); //put it for displaying the title.
-                                startActivity(intent);**/
-                               /** if(incoming.getBehalf_company_name() !=null){
-                                    Intent intent = new Intent(IncomingChat.this, ConversationActivity.class);
-                                    intent.putExtra(ConversationUIService.USER_ID,incoming.getBehalf_company_id());
-                                    intent.putExtra(ConversationUIService.DISPLAY_NAME, incoming.getBehalf_company_name()); //put it for displaying the title.
-                                    startActivity(intent);
+                               // initiateOneOnOneChat(incoming,chat_session);
 
 
-                                }else {
 
-                                    Intent intent = new Intent(IncomingChat.this, ConversationActivity.class);
-                                    intent.putExtra(ConversationUIService.USER_ID,incoming.getCustomer_id());
-                                    intent.putExtra(ConversationUIService.DISPLAY_NAME, incoming.getCustomer_fname() +  "  "  +incoming.getCustomer_lname()); //put it for displaying the title.
-                                    startActivity(intent);
-
-                                }**/
-
-
-                                //ApplozicUserLogin(incoming);
                             }
 
 
@@ -382,14 +349,70 @@ public class IncomingChat extends Activity {
                 return headers;
             }
         };
-        int socketTimeout = 480000000;//8 minutes - change to what you want
-        RetryPolicy policy = new DefaultRetryPolicy(
-                socketTimeout,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
-        request.setRetryPolicy(policy);
+
         requestQueue.add(request);
         Log.d("oxinbo","Server Logs"+params.toString());
+    }
+
+    private void ApplozicUserLogin(String displayName,String ID){
+
+        UserLoginTask.TaskListener listener = new UserLoginTask.TaskListener() {
+            @Override
+            public void onSuccess(RegistrationResponse registrationResponse, Context context) {
+
+                ApplozicClient.getInstance(context).enableNotification();
+                //ApplozicClient.getInstance(context).hideChatListOnNotification();
+                ApplozicClient.getInstance(context).setContextBasedChat(false);
+
+
+                Log.d("aPPLOZIC Succes",registrationResponse.toString());
+                ApplozicClient.getInstance(context).setHandleDial(true).setIPCallEnabled(true);
+                Map<ApplozicSetting.RequestCode, String> activityCallbacks = new HashMap<ApplozicSetting.RequestCode, String>();
+                activityCallbacks.put(ApplozicSetting.RequestCode.AUDIO_CALL, AudioCallActivityV2.class.getName());
+                activityCallbacks.put(ApplozicSetting.RequestCode.VIDEO_CALL, VideoActivity.class.getName());
+                ApplozicSetting.getInstance(context).setActivityCallbacks(activityCallbacks);
+
+
+                PushNotificationTask.TaskListener pushNotificationTaskListener=  new PushNotificationTask.TaskListener() {
+                    @Override
+                    public void onSuccess(RegistrationResponse registrationResponse) {
+
+                        Log.d("ApplozicSuccess",registrationResponse.getMessage().toString());
+                    }
+
+                    @Override
+                    public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
+                        Log.d("ApplozicFailed",registrationResponse.getMessage().toString());
+
+                    }
+                };
+                PushNotificationTask pushNotificationTask = new PushNotificationTask(Applozic.getInstance(context).getDeviceRegistrationId(),pushNotificationTaskListener,context);
+                pushNotificationTask.execute((Void)null);
+            }
+
+            @Override
+            public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
+                // Log.d("aPPLOZIC Failed",registrationResponse.toString());
+            }
+        };
+
+
+        com.applozic.mobicomkit.api.account.user.User applozicUser = new com.applozic.mobicomkit.api.account.user.User();
+        applozicUser.setUserId(ID);
+
+        applozicUser.setDisplayName(displayName);
+
+        List<String> featureList =  new ArrayList<>();
+        featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_AUDIO_CALL.getValue());// FOR AUDIO
+        featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_VIDEO_CALL.getValue());// FOR VIDEO
+        applozicUser.setFeatures(featureList);
+
+        applozicUser.setAuthenticationTypeId(com.applozic.mobicomkit.api.account.user.User.AuthenticationType.APPLOZIC.getValue());
+        new UserLoginTask(applozicUser, listener, this).execute((Void) null);
+
+
+
+
     }
 
     private Conversation buildConversation(final IncomingChatModel incoming,String chat_session) {
@@ -423,26 +446,42 @@ public class IncomingChat extends Activity {
 
 
     private void initiateOneOnOneChat(final IncomingChatModel incoming,String chat_session){
+
+        Log.d("Applozic","Initiating chat with new Account....");
+
+
         ApplozicConversationCreateTask applozicConversationCreateTask = null;
+//        UserService.getInstance(IncomingChat.this).updateDisplayNameORImageLink(incoming.getCompany_name(),"",null,null);
 
         ApplozicConversationCreateTask.ConversationCreateListener conversationCreateListener =  new ApplozicConversationCreateTask.ConversationCreateListener() {
             @Override
             public void onSuccess(Integer conversationId, Context context) {
-             Log.d("conVid",conversationId.toString());
+                Log.d("Applozic","Initiating chat with new Account success....");
+
+                Log.d("conVid",conversationId.toString());
                 //For launching the  one to one  chat
+
+                pDialog.dismiss();
+
                 Intent intent = new Intent(context, ConversationActivity.class);
                 intent.putExtra("takeOrder", true);
-                intent.putExtra(ConversationUIService.USER_ID, incoming.getCustomer_encrypted_id());//RECEIVER USERID
-               // intent.putExtra(ConversationUIService.DEFAULT_TEXT, "Hello I am interested in this car, Can we chat?");
+
+                Log.d("Applozic","Reciever UserID "+  incoming.getCustomer_encrypted_id());
 
                 if( incoming.getBehalf_company_name() == null){
+                    intent.putExtra(ConversationUIService.USER_ID, incoming.getCustomer_encrypted_id());//RECEIVER USERID
+                    // intent.putExtra(ConversationUIService.DEFAULT_TEXT, "Hello I am interested in this car, Can we chat?");
 
                     intent.putExtra(ConversationUIService.DISPLAY_NAME, incoming.getCustomer_fname()+  "  "  + incoming.getCustomer_lname());
                 }else{
 
+                    intent.putExtra(ConversationUIService.USER_ID, incoming.behalf_company_id+incoming.getCustomer_encrypted_id());//RECEIVER USERID
+                    // intent.putExtra(ConversationUIService.DEFAULT_TEXT, "Hello I am interested in this car, Can we chat?");
                     intent.putExtra(ConversationUIService.DISPLAY_NAME, incoming.getBehalf_company_name());
 
                 }
+
+
                 ApplozicApplication.cosappUserID = Application.AppUserKey;
 
               //
@@ -453,152 +492,120 @@ public class IncomingChat extends Activity {
 
             @Override
             public void onFailure(Exception e, Context context) {
+                Log.d("Applozic","Initiating chat with new Account failed....");
 
             }
         };
         Conversation conversation = buildConversation(incoming,chat_session); //From Step 1
+       // conversation.set
+     //   UserService.getInstance(context).updateDisplayNameORImageLink(incoming.getCompany_name(),"",null,null);
+
+
         applozicConversationCreateTask = new ApplozicConversationCreateTask(IncomingChat.this,conversationCreateListener,conversation);
         applozicConversationCreateTask.execute((Void)null);
 
     }
 
+     SweetAlertDialog pDialog;
 
-    private void ApplozicUserLogin(final String UserID, final String userDisplayName, String UserAvator){
+    private void ApplozicUserLogin(final IncomingChatModel incoming,
+                                   final String chatsessionID){
 
-        UserLoginTask.TaskListener listener = new UserLoginTask.TaskListener() {
+        Log.d("Applozic","Login into new Company Account ....");
+
+        //new UserClientService(IncomingChat.this).logout();
+
+        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        pDialog.setTitleText("Almost done ..");
+        //pDialog.setContentText("Logging you into " + incoming.getCompany_name()+ " account ");
+        pDialog.setCancelable(false);
+        pDialog.show();
+
+
+
+
+        UserLogoutTask.TaskListener userLogoutTaskListener = new UserLogoutTask.TaskListener() {
             @Override
-            public void onSuccess(RegistrationResponse registrationResponse, Context context) {
-
-                ApplozicClient.getInstance(context).enableNotification();
-                ApplozicClient.getInstance(context).hideChatListOnNotification();
-
-                Log.d("aPPLOZIC Succes",registrationResponse.toString());
-                ApplozicClient.getInstance(context).setContextBasedChat(true).setHandleDial(true).setIPCallEnabled(true);
-                Map<ApplozicSetting.RequestCode, String> activityCallbacks = new HashMap<ApplozicSetting.RequestCode, String>();
-                activityCallbacks.put(ApplozicSetting.RequestCode.AUDIO_CALL, AudioCallActivityV2.class.getName());
-                activityCallbacks.put(ApplozicSetting.RequestCode.VIDEO_CALL, VideoActivity.class.getName());
-                ApplozicSetting.getInstance(context).setActivityCallbacks(activityCallbacks);
-
-
-                PushNotificationTask.TaskListener pushNotificationTaskListener=  new PushNotificationTask.TaskListener() {
+            public void onSuccess(Context context) {
+                UserLoginTask.TaskListener listener = new UserLoginTask.TaskListener() {
                     @Override
-                    public void onSuccess(RegistrationResponse registrationResponse) {
+                    public void onSuccess(RegistrationResponse registrationResponse, Context context) {
+
+                        Log.d("Applozic","Login into new Company Account Succesfull....");
 
 
-                        Intent intent = new Intent(IncomingChat.this, ConversationActivity.class);
-                        intent.putExtra(ConversationUIService.USER_ID,UserID);
-                        intent.putExtra(ConversationUIService.DISPLAY_NAME, userDisplayName); //put it for displaying the title.
-                        startActivity(intent);
+                        ApplozicClient.getInstance(context).enableNotification();
+                        ApplozicClient.getInstance(context).hideChatListOnNotification();
 
+                        Log.d("aPPLOZIC Succes",registrationResponse.toString());
+                        ApplozicClient.getInstance(context).setContextBasedChat(false).setHandleDial(true).setIPCallEnabled(true);
+                        Map<ApplozicSetting.RequestCode, String> activityCallbacks = new HashMap<ApplozicSetting.RequestCode, String>();
+                        activityCallbacks.put(ApplozicSetting.RequestCode.AUDIO_CALL, AudioCallActivityV2.class.getName());
+                        activityCallbacks.put(ApplozicSetting.RequestCode.VIDEO_CALL, VideoActivity.class.getName());
+                        ApplozicSetting.getInstance(context).setActivityCallbacks(activityCallbacks);
+
+
+                        /**
+                         *  String avatorPath= incoming.getBehalf_company_path()+incoming.getBehalf_company_storage()+"/"+incoming.getBehalf_company_avatar();
+                         String userID = incoming.getCompany_id()+incoming.getCompany_department();
+                         String displayname = incoming.getCompany_name();
+                         *
+                         *
+                         * **/
+
+
+
+
+                        PushNotificationTask.TaskListener pushNotificationTaskListener=  new PushNotificationTask.TaskListener() {
+                            @Override
+                            public void onSuccess(RegistrationResponse registrationResponse) {
+
+
+                                initiateOneOnOneChat(incoming,chatsessionID);
+
+                            }
+
+                            @Override
+                            public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
+
+                            }
+                        };
+                        PushNotificationTask pushNotificationTask = new PushNotificationTask(Applozic.getInstance(context).getDeviceRegistrationId(),pushNotificationTaskListener,context);
+                        pushNotificationTask.execute((Void)null);
                     }
 
                     @Override
                     public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
+                        // Log.d("aPPLOZIC Failed",registrationResponse.toString());
+
+                        Log.d("Applozic","Login into new Company Account Failed....");
 
                     }
                 };
-                PushNotificationTask pushNotificationTask = new PushNotificationTask(Applozic.getInstance(context).getDeviceRegistrationId(),pushNotificationTaskListener,context);
-                pushNotificationTask.execute((Void)null);
-            }
+                String avatorPath= incoming.getBehalf_company_path()+incoming.getBehalf_company_storage()+"/"+incoming.getBehalf_company_avatar();
 
+                com.applozic.mobicomkit.api.account.user.User applozicUser = new com.applozic.mobicomkit.api.account.user.User();
+                applozicUser.setUserId(incoming.company_id+Application.AppUserKey);
+                applozicUser.setDisplayName(incoming.getCompany_name());
+                applozicUser.setImageLink(avatorPath);
+                List<String> featureList =  new ArrayList<>();
+                featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_AUDIO_CALL.getValue());// FOR AUDIO
+                featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_VIDEO_CALL.getValue());// FOR VIDEO
+                applozicUser.setFeatures(featureList);
+
+                applozicUser.setAuthenticationTypeId(com.applozic.mobicomkit.api.account.user.User.AuthenticationType.APPLOZIC.getValue());
+                new UserLoginTask(applozicUser, listener, IncomingChat.this).execute((Void) null);
+
+            }
             @Override
-            public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
-                // Log.d("aPPLOZIC Failed",registrationResponse.toString());
+            public void onFailure(Exception exception) {
+                //Logout failure
             }
-        };
+        };UserLogoutTask userLogoutTask = new UserLogoutTask(userLogoutTaskListener, IncomingChat.this);
+        userLogoutTask.execute((Void) null);
 
 
-        com.applozic.mobicomkit.api.account.user.User applozicUser = new com.applozic.mobicomkit.api.account.user.User();
-        applozicUser.setUserId(UserID);
-        applozicUser.setDisplayName(userDisplayName);
-        applozicUser.setImageLink(UserAvator);
-        List<String> featureList =  new ArrayList<>();
-        featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_AUDIO_CALL.getValue());// FOR AUDIO
-        featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_VIDEO_CALL.getValue());// FOR VIDEO
-        applozicUser.setFeatures(featureList);
-
-        applozicUser.setAuthenticationTypeId(com.applozic.mobicomkit.api.account.user.User.AuthenticationType.APPLOZIC.getValue());
-        new UserLoginTask(applozicUser, listener, this).execute((Void) null);
-
-
-
-
-    }
-    private void ApplozicUserLogin(final IncomingChatModel incoming){
-
-        UserLoginTask.TaskListener listener = new UserLoginTask.TaskListener() {
-            @Override
-            public void onSuccess(RegistrationResponse registrationResponse, Context context) {
-
-                ApplozicClient.getInstance(context).enableNotification();
-                ApplozicClient.getInstance(context).hideChatListOnNotification();
-
-                Log.d("aPPLOZIC Succes",registrationResponse.toString());
-                ApplozicClient.getInstance(context).setContextBasedChat(true).setHandleDial(true).setIPCallEnabled(true);
-                Map<ApplozicSetting.RequestCode, String> activityCallbacks = new HashMap<ApplozicSetting.RequestCode, String>();
-                activityCallbacks.put(ApplozicSetting.RequestCode.AUDIO_CALL, AudioCallActivityV2.class.getName());
-                activityCallbacks.put(ApplozicSetting.RequestCode.VIDEO_CALL, VideoActivity.class.getName());
-                ApplozicSetting.getInstance(context).setActivityCallbacks(activityCallbacks);
-
-
-                /**
-                 *  String avatorPath= incoming.getBehalf_company_path()+incoming.getBehalf_company_storage()+"/"+incoming.getBehalf_company_avatar();
-                 String userID = incoming.getCompany_id()+incoming.getCompany_department();
-                 String displayname = incoming.getCompany_name();
-                 *
-                 *
-                 * **/
-
-                PushNotificationTask.TaskListener pushNotificationTaskListener=  new PushNotificationTask.TaskListener() {
-                    @Override
-                    public void onSuccess(RegistrationResponse registrationResponse) {
-                        if(incoming.getBehalf_company_name() !=null){
-                            Intent intent = new Intent(IncomingChat.this, ConversationActivity.class);
-                            intent.putExtra(ConversationUIService.USER_ID,incoming.getBehalf_company_id());
-                            intent.putExtra(ConversationUIService.DISPLAY_NAME, incoming.getBehalf_company_name()); //put it for displaying the title.
-                            startActivity(intent);
-
-
-                        }else {
-
-                            Intent intent = new Intent(IncomingChat.this, ConversationActivity.class);
-                            intent.putExtra(ConversationUIService.USER_ID,incoming.getCustomer_id());
-                            intent.putExtra(ConversationUIService.DISPLAY_NAME, incoming.getCustomer_fname() +  "  "  +incoming.getCustomer_lname()); //put it for displaying the title.
-                            startActivity(intent);
-
-                        }
-
-
-
-                    }
-
-                    @Override
-                    public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
-
-                    }
-                };
-                PushNotificationTask pushNotificationTask = new PushNotificationTask(Applozic.getInstance(context).getDeviceRegistrationId(),pushNotificationTaskListener,context);
-                pushNotificationTask.execute((Void)null);
-            }
-
-            @Override
-            public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
-                // Log.d("aPPLOZIC Failed",registrationResponse.toString());
-            }
-        };
-        String avatorPath= incoming.getBehalf_company_path()+incoming.getBehalf_company_storage()+"/"+incoming.getBehalf_company_avatar();
-
-        com.applozic.mobicomkit.api.account.user.User applozicUser = new com.applozic.mobicomkit.api.account.user.User();
-        applozicUser.setUserId(incoming.company_id);
-        applozicUser.setDisplayName(incoming.getCompany_name());
-        applozicUser.setImageLink(avatorPath);
-        List<String> featureList =  new ArrayList<>();
-        featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_AUDIO_CALL.getValue());// FOR AUDIO
-        featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_VIDEO_CALL.getValue());// FOR VIDEO
-        applozicUser.setFeatures(featureList);
-
-        applozicUser.setAuthenticationTypeId(com.applozic.mobicomkit.api.account.user.User.AuthenticationType.APPLOZIC.getValue());
-        new UserLoginTask(applozicUser, listener, this).execute((Void) null);
 
 
 

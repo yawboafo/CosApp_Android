@@ -214,23 +214,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        try{
-
-
-
-            timer.schedule(new TimerTask()
-            {
-                @Override
-                public void run()
-                {
-
-                    startService(new Intent(MainActivity.this, Terminator2.class));
-                    invalidateOptionsMenu();
-                }
-            }, 0, 5000);
-
-
-        }catch (Exception e){e.printStackTrace();}
 
 
 
@@ -371,8 +354,28 @@ public class MainActivity extends AppCompatActivity
 
 
 
-                ApplozicUserLogin();
+               // ApplozicUserLogin();
               //  fireBaseLogin();
+
+
+                try{
+
+
+
+                    timer.schedule(new TimerTask()
+                    {
+                        @Override
+                        public void run()
+                        {
+
+                            startService(new Intent(MainActivity.this, Terminator2.class));
+                            invalidateOptionsMenu();
+                        }
+                    }, 0, 5000);
+
+
+                }catch (Exception e){e.printStackTrace();}
+
             }else{
 
                 nav_user.setText("You are not logged in");
@@ -768,45 +771,45 @@ public class MainActivity extends AppCompatActivity
 
     private void ApplozicUserLogin(){
 
-      UserLoginTask.TaskListener listener = new UserLoginTask.TaskListener() {
-          @Override
-          public void onSuccess(RegistrationResponse registrationResponse, Context context) {
+        UserLoginTask.TaskListener listener = new UserLoginTask.TaskListener() {
+            @Override
+            public void onSuccess(RegistrationResponse registrationResponse, Context context) {
 
-              ApplozicClient.getInstance(context).enableNotification();
-              //ApplozicClient.getInstance(context).hideChatListOnNotification();
-              ApplozicClient.getInstance(context).setContextBasedChat(false);
-
-
-              Log.d("aPPLOZIC Succes",registrationResponse.toString());
-              ApplozicClient.getInstance(context).setHandleDial(true).setIPCallEnabled(true);
-              Map<ApplozicSetting.RequestCode, String> activityCallbacks = new HashMap<ApplozicSetting.RequestCode, String>();
-              activityCallbacks.put(ApplozicSetting.RequestCode.AUDIO_CALL, AudioCallActivityV2.class.getName());
-              activityCallbacks.put(ApplozicSetting.RequestCode.VIDEO_CALL, VideoActivity.class.getName());
-              ApplozicSetting.getInstance(context).setActivityCallbacks(activityCallbacks);
+                ApplozicClient.getInstance(context).enableNotification();
+                //ApplozicClient.getInstance(context).hideChatListOnNotification();
+                ApplozicClient.getInstance(context).setContextBasedChat(false);
 
 
-              PushNotificationTask.TaskListener pushNotificationTaskListener=  new PushNotificationTask.TaskListener() {
-                  @Override
-                  public void onSuccess(RegistrationResponse registrationResponse) {
+                Log.d("aPPLOZIC Succes",registrationResponse.toString());
+                ApplozicClient.getInstance(context).setHandleDial(true).setIPCallEnabled(true);
+                Map<ApplozicSetting.RequestCode, String> activityCallbacks = new HashMap<ApplozicSetting.RequestCode, String>();
+                activityCallbacks.put(ApplozicSetting.RequestCode.AUDIO_CALL, AudioCallActivityV2.class.getName());
+                activityCallbacks.put(ApplozicSetting.RequestCode.VIDEO_CALL, VideoActivity.class.getName());
+                ApplozicSetting.getInstance(context).setActivityCallbacks(activityCallbacks);
 
-                      Log.d("ApplozicSuccess",registrationResponse.getMessage().toString());
-                  }
 
-                  @Override
-                  public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
-                      Log.d("ApplozicFailed",registrationResponse.getMessage().toString());
+                PushNotificationTask.TaskListener pushNotificationTaskListener=  new PushNotificationTask.TaskListener() {
+                    @Override
+                    public void onSuccess(RegistrationResponse registrationResponse) {
 
-                  }
-              };
-              PushNotificationTask pushNotificationTask = new PushNotificationTask(Applozic.getInstance(context).getDeviceRegistrationId(),pushNotificationTaskListener,context);
-              pushNotificationTask.execute((Void)null);
-          }
+                        Log.d("ApplozicSuccess",registrationResponse.getMessage().toString());
+                    }
 
-          @Override
-          public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
-             // Log.d("aPPLOZIC Failed",registrationResponse.toString());
-          }
-      };
+                    @Override
+                    public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
+                        Log.d("ApplozicFailed",registrationResponse.getMessage().toString());
+
+                    }
+                };
+                PushNotificationTask pushNotificationTask = new PushNotificationTask(Applozic.getInstance(context).getDeviceRegistrationId(),pushNotificationTaskListener,context);
+                pushNotificationTask.execute((Void)null);
+            }
+
+            @Override
+            public void onFailure(RegistrationResponse registrationResponse, Exception exception) {
+                // Log.d("aPPLOZIC Failed",registrationResponse.toString());
+            }
+        };
 
 
         com.applozic.mobicomkit.api.account.user.User applozicUser = new com.applozic.mobicomkit.api.account.user.User();
@@ -815,18 +818,18 @@ public class MainActivity extends AppCompatActivity
         applozicUser.setDisplayName(user.getFname() + "  " + user.getLname());
         applozicUser.setEmail(user.getEmail());
         applozicUser.setContactNumber(user.getPhone());
-       List<String> featureList =  new ArrayList<>();
-       featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_AUDIO_CALL.getValue());// FOR AUDIO
-       featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_VIDEO_CALL.getValue());// FOR VIDEO
-       applozicUser.setFeatures(featureList);
+        List<String> featureList =  new ArrayList<>();
+        featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_AUDIO_CALL.getValue());// FOR AUDIO
+        featureList.add(com.applozic.mobicomkit.api.account.user.User.Features.IP_VIDEO_CALL.getValue());// FOR VIDEO
+        applozicUser.setFeatures(featureList);
 
-      applozicUser.setAuthenticationTypeId(com.applozic.mobicomkit.api.account.user.User.AuthenticationType.APPLOZIC.getValue());
-      new UserLoginTask(applozicUser, listener, this).execute((Void) null);
-
-
+        applozicUser.setAuthenticationTypeId(com.applozic.mobicomkit.api.account.user.User.AuthenticationType.APPLOZIC.getValue());
+        new UserLoginTask(applozicUser, listener, this).execute((Void) null);
 
 
-  }
+
+
+    }
 
     @Override
     public void showErrorMessageView(String message) {
@@ -903,6 +906,9 @@ public class MainActivity extends AppCompatActivity
             String errorMessage = getResources().getString(R.string.internet_connection_not_available);
             showErrorMessageView(errorMessage);
         }
+
+
+
     }
 
 

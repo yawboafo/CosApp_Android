@@ -93,16 +93,17 @@ try{
 
                     Log.d(TAG,"customer_email"+remoteMessage.getData().get("customer_email"));
 
-                    Log.d(TAG,"customer_encrypted_id"+remoteMessage.getData().get("customer_encrypted_id"));
+                    Log.d(TAG,"customer_encrypted_id"+jsonObject.getString("customer_encrypted_id"));
 
 
                     Log.d("UserID","CURRENT USER ID"+Application.AppUserKey  +  "CALLING UERS  " + incomingChatModel.getCustomer_encrypted_id());
+                    Log.d("UserID","I found the same IDS");
 
-                    if(Application.AppUserKey == incomingChatModel.getCustomer_encrypted_id()){
-
+                    if(Application.AppUserKey.toString().equals(incomingChatModel.getCustomer_encrypted_id().toString())){
+                        Log.d("UserID","hmm the same  IDs");
                         Toast.makeText(getApplicationContext(),"Ugly error",Toast.LENGTH_SHORT).show();
                     }else{
-
+                        Log.d("UserID","Not same IDs");
                         Intent intent = new Intent(Application.getContext(), IncomingChat.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);

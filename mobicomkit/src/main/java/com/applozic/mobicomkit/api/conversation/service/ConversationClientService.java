@@ -10,6 +10,7 @@ import com.applozic.mobicomkit.api.conversation.database.ConversationDatabaseSer
 import com.applozic.mobicomkit.feed.ApiResponse;
 import com.applozic.mobicomkit.feed.ChannelFeed;
 import com.applozic.mobicomkit.feed.ChannelFeedApiResponse;
+import com.applozic.mobicomkit.feed.ConversationFeed;
 import com.applozic.mobicommons.json.GsonUtils;
 import com.applozic.mobicommons.people.channel.Conversation;
 
@@ -38,6 +39,7 @@ public class ConversationClientService extends MobiComKitClientService {
         this.context = context;
         this.httpRequestUtils = new HttpRequestUtils(context);
 
+
     }
 
     public synchronized static ConversationClientService getInstance(Context context) {
@@ -46,7 +48,22 @@ public class ConversationClientService extends MobiComKitClientService {
         }
         return conversationClientService;
     }
-
+    public Conversation getConversation(Integer conversationId) {
+        String response = "";
+        try {
+            if (conversationId != null) {
+                response = httpRequestUtils.getResponse(getConversationUrl() + "?id=" + String.valueOf(conversationId), "application/json", "application/json");
+                ConversationFeed apiResponse = (ConversationFeed) GsonUtils.getObjectFromJson(response, ConversationFeed.class);
+                Log.i(TAG, "Conversation response  is :" + response);
+                if (apiResponse != null && apiResponse.isSuccess()) {
+                    return (Conversation) apiResponse.getResponse();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     public String getCreateConversationUrl() {
         return getBaseUrl() + CREATE_CONVERSATION_URL;
     }
@@ -81,22 +98,7 @@ public class ConversationClientService extends MobiComKitClientService {
         return channelFeed;
     }
 
-    public Conversation getConversation(Integer conversationId) {
-        String response = "";
-        try {
-            if (conversationId != null) {
-                response = httpRequestUtils.getResponse(getConversationUrl() + "?id=" + String.valueOf(conversationId), "application/json", "application/json");
-                ApiResponse apiResponse = (ApiResponse) GsonUtils.getObjectFromJson(response, ApiResponse.class);
-                Log.i(TAG, "Conversation response  is :" + response);
-                if (apiResponse != null && apiResponse.isSuccess()) {
-                    return (Conversation) apiResponse.getResponse();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+
 
     public String closeConversation(Integer conversationId) {
         String response;

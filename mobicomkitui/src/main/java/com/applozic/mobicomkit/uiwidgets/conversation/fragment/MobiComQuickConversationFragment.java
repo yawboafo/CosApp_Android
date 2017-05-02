@@ -308,9 +308,11 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         }
 
 
+        Log.d("Applozic","is is marked as resolved :  "+get4rmSharedPreference("markasread"+message.getConversationId().toString()));
+
         for (int i = 0; i < menuItems.length; i++) {
 
-            if(menuItems[i].equals("Mark as Resolved") && customerID.equals(ApplozicApplication.cosappUserID) /**&& get4rmSharedPreference("markasread"+BroadcastService.staticconversationID.toString())== false**/){
+            if(menuItems[i].equals("Mark as Resolved") && customerID.equals(ApplozicApplication.cosappUserID) ){
 
               continue;
             }
@@ -321,6 +323,11 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
                 continue;
             }
 
+
+            if(menuItems[i].equals("Mark as Resolved") && get4rmSharedPreference("markasread"+message.getConversationId().toString())== true){
+
+                continue;
+            }
 
 
             menu.add(Menu.NONE, i, i, menuItems[i]);
@@ -352,7 +359,7 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
         if (messageList.size() <= position) {
             return true;
         }
-        Message message = messageList.get(position);
+        final Message message = messageList.get(position);
 
         Channel channel = null;
         Contact contact = null;
@@ -394,7 +401,8 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
 
 
                                 try {
-
+                                    conversationTopicDetails = ConversationDatabaseService.getInstance(getActivity())
+                                            .getConversationByConversationId(message.getConversationId());
                                     String TopicDetails = conversationTopicDetails.getTopicDetail();
 
                                     JSONObject jObject  = new JSONObject(TopicDetails);
@@ -404,7 +412,7 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
                                     String chatsessionID = conversationTopicDetails.getTopicId();
 
 
-                                    makeasresolved(chatsessionID,companyID);
+                                    makeasresolved(chatsessionID,companyID,message.getConversationId());
 
 
 
@@ -1062,45 +1070,21 @@ public class MobiComQuickConversationFragment extends Fragment implements Search
     }
 
     SweetAlertDialog pDialog = null;
-    private void makeasresolved(String chat_session, String company_id){
+    private void makeasresolved(String chat_session, String company_id, final Integer conversationID){
 
 
         pDialog = new SweetAlertDialog(getActivity(), SweetAlertDialog.PROGRESS_TYPE);
         pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        pDialog.setTitleText("Good Job ..");
+        pDialog.setTitleText("Closing chat ..");
         pDialog.setCancelable(false);
         pDialog.show();
 
         Log.d("companies","loading from initiateChat");
 
         final HashMap<String, String> params = new HashMap<String, String>();
-
-/*
-* is_rate_rep
-chat_session
-company_id
-rating_value
-review_text
-*
-*
-*
-* */
-
-/*
-*
-* is_end_conversation
-chat_session_id
-company_id
-*
-* */
-        params.put("is_end_conversation",""+ "1");
-        params.put("chat_session",chat_session);
+        params.put("end_conversation",""+ "1");
+        params.put("chat_session_id",chat_session);
         params.put("company_id",company_id);
-
-
-
-
-
 
         volleySingleton= VolleySingleton.getsInstance(getActivity());
         requestQueue=VolleySingleton.getRequestQueue(getActivity());
@@ -1137,7 +1121,7 @@ company_id
                             } else if (statuscode.equals("201")) {
                                 //getConversationDetailsFromFileUpdateRating();
 
-                                write2SharedPrefrence("markasread"+BroadcastService.staticconversationID.toString(),true);
+                                write2SharedPrefrence("markasread"+conversationID,true);
 
                                 new SweetAlertDialog(getActivity(), SweetAlertDialog.SUCCESS_TYPE)
                                         .setTitleText("Completed")
